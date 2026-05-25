@@ -1,12 +1,12 @@
 # lab.faysk.dev
 
-Browser telemetry lab and cyberpunk diagnostics experiment by Faysk.
+Privacy-aware browser diagnostics lab by Faysk.
 
 ---
 
 # About
 
-lab.faysk.dev is a futuristic cyberpunk-inspired browser telemetry and intelligence experiment built with:
+lab.faysk.dev is a browser observatory experiment built with:
 
 - HTML5
 - CSS3
@@ -18,19 +18,19 @@ The project focuses on:
 - telemetry visualization
 - browser intelligence
 - system diagnostics
-- immersive UI/UX
+- clear diagnostics UI/UX
 - modular frontend architecture
 - browser API experimentation
 - realtime telemetry concepts
 
 ---
 
-# 🎯 Main Vision
+# Main Vision
 
 The long-term goal of the project is to create:
 
 ```txt
-A futuristic browser intelligence laboratory.
+A clean, privacy-aware browser intelligence laboratory.
 ```
 
 An immersive platform capable of:

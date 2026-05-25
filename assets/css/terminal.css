@@ -1,7 +1,5 @@
 #live-terminal {
-  overflow: hidden;
-  margin-top: var(--space-6);
-  font-family: var(--font-mono);
+  margin-top: var(--space-5);
 }
 
 .terminal-header {
@@ -9,21 +7,21 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  background: rgba(2, 8, 11, 0.62);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
 }
 
 .terminal-title {
-  color: var(--color-cyan);
-  font-size: 0.82rem;
-  font-weight: 800;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-weight: 860;
+  text-transform: uppercase;
 }
 
 .terminal-subtitle {
   margin-top: var(--space-1);
-  color: var(--color-subtle);
-  font-size: 0.72rem;
+  color: var(--muted);
+  font-size: 0.86rem;
 }
 
 .terminal-controls {
@@ -34,63 +32,54 @@
 .terminal-dot {
   width: 10px;
   height: 10px;
-  border-radius: 999px;
-  box-shadow: 0 0 14px currentColor;
+  border-radius: 50%;
 }
 
-.terminal-dot.red { background: var(--color-red); color: var(--color-red); }
-.terminal-dot.yellow { background: var(--color-yellow); color: var(--color-yellow); }
-.terminal-dot.green { background: var(--color-green); color: var(--color-green); }
+.terminal-dot.red { background: var(--red); }
+.terminal-dot.yellow { background: var(--amber); }
+.terminal-dot.green { background: var(--green); }
 
 .terminal-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.025);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
 }
 
 .terminal-toolbar span {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-xs);
-  color: var(--color-muted);
+  min-height: 28px;
+  padding: 0.34rem 0.58rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 0.72rem;
 }
 
 #terminal-output {
-  display: grid;
-  gap: var(--space-2);
-  min-height: 190px;
   max-height: 320px;
   overflow: auto;
-  padding: var(--space-4);
-  color: var(--color-green);
-  font-size: 0.88rem;
-  background:
-    linear-gradient(rgba(141, 255, 178, 0.035) 1px, transparent 1px),
-    rgba(1, 6, 8, 0.72);
-  background-size: 100% 28px;
+  padding: var(--space-5);
 }
 
 .terminal-line {
-  min-width: 0;
-  color: var(--color-green);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  line-height: 1.75;
   overflow-wrap: anywhere;
 }
 
+.terminal-line[data-level="info"] {
+  color: var(--aqua);
+}
+
 .terminal-line[data-level="warn"] {
-  color: var(--color-yellow);
+  color: var(--amber);
 }
 
 .terminal-line[data-level="error"] {
-  color: var(--color-red);
-}
-
-.terminal-line:last-child::after {
-  content: "_";
-  display: inline-block;
-  margin-left: 0.2rem;
-  animation: terminalBlink 1s steps(1) infinite;
+  color: var(--red);
 }

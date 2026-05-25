@@ -9,7 +9,7 @@ function countGroupModules(groupId, modules) {
 export function renderSidebar({ activeGroup, onGroupSelect, modules = [] }) {
   const list = createElement("ul", { className: "nav-list" });
 
-  const groups = [{ id: "all", label: "All Modules", icon: "AL" }, ...MODULE_GROUPS];
+  const groups = [{ id: "all", label: "All signals", icon: "AL" }, ...MODULE_GROUPS];
 
   groups.forEach((group) => {
     const count = countGroupModules(group.id, modules);

@@ -29,47 +29,84 @@ function createSearchIndex(module) {
   return `${module.title} ${module.groupLabel} ${module.description} ${module.status} ${itemText}`.toLowerCase();
 }
 
-function renderCommandBar() {
-  return createElement("section", {
-    className: "command-bar is-revealed",
+function createLink(label, href, variant = "") {
+  const external = /^https?:\/\//.test(href);
+  return createElement("a", {
+    className: `button ${variant}`.trim(),
+    text: label,
+    attrs: {
+      href,
+      target: external ? "_blank" : "",
+      rel: external ? "noreferrer" : ""
+    }
+  });
+}
+
+function createBrand() {
+  return createElement("a", {
+    className: "brand",
+    attrs: { href: "/" },
     children: [
-      createElement("div", {
-        className: "command-title",
+      createElement("span", { className: "brand-mark", text: "FL" }),
+      createElement("span", {
+        className: "brand-copy",
         children: [
-          createElement("span", { className: "command-eyebrow", text: "CONTROL CENTER" }),
-          createElement("strong", { text: "Passive telemetry interface" })
-        ]
-      }),
-      createElement("div", {
-        className: "command-pills",
-        children: [
-          createElement("span", { text: "No permission prompts" }),
-          createElement("span", { text: "ES Modules" }),
-          createElement("span", { text: "Static build" })
+          createElement("strong", { text: APP_NAME }),
+          createElement("span", { text: "browser observatory" })
         ]
       })
     ]
   });
 }
 
+function renderTopbar() {
+  return createElement("header", {
+    className: "lab-topbar",
+    children: [
+      createBrand(),
+      createElement("nav", {
+        className: "lab-nav",
+        attrs: { "aria-label": "Lab navigation" },
+        children: [
+          createElement("a", { text: "Overview", attrs: { href: "#overview" } }),
+          createElement("a", { text: "Signals", attrs: { href: "#signals" } }),
+          createElement("a", { text: "Terminal", attrs: { href: "#live-terminal" } }),
+          createElement("a", { text: "Hub", attrs: { href: "https://faysk.dev", target: "_blank", rel: "noreferrer" } })
+        ]
+      }),
+      createElement("div", {
+        className: "topbar-actions",
+        children: [
+          createElement("span", { className: "signal-pill", text: "safe mode" }),
+          createLink("Back to hub", "https://faysk.dev", "button")
+        ]
+      })
+    ]
+  });
+}
+
+function createSignalPill(text) {
+  return createElement("span", { className: "signal-pill", text });
+}
+
 function renderHero() {
   const scanButton = createElement("button", {
     className: "primary-button",
     attrs: { id: "scan-button", type: "button" },
-    text: "Start Scan"
+    text: "Run passive scan"
   });
 
   const terminalButton = createElement("button", {
     className: "secondary-button",
     attrs: { id: "terminal-button", type: "button" },
-    text: "Open Terminal"
+    text: "Open terminal"
   });
 
   scanButton.addEventListener("click", () => {
     const telemetry = collectTelemetry();
     const nextCount = getState().scanCount + 1;
     setState({ telemetry, scanCount: nextCount });
-    log(`Safe scan ${nextCount} completed without permission prompts.`, "info");
+    log(`Passive scan ${nextCount} completed without permission prompts.`, "info");
   });
 
   terminalButton.addEventListener("click", () => {
@@ -78,66 +115,54 @@ function renderHero() {
   });
 
   return createElement("section", {
-    attrs: { id: "hero" },
+    className: "lab-hero",
+    attrs: { id: "overview" },
     children: [
       createElement("div", {
-        className: "hero-left is-revealed",
+        className: "hero-panel is-revealed",
         children: [
-          createElement("div", { className: "hero-badge", text: "Advanced Browser Intelligence" }),
+          createElement("div", { className: "eyebrow", text: "Privacy-aware browser lab" }),
           createElement("h1", {
             className: "hero-title",
-            html: "Browser Telemetry <span class=\"hero-highlight\">Reimagined</span>"
+            html: "Browser signals,<span>collected safely.</span>"
           }),
           createElement("p", {
             className: "hero-description",
-            text: "A futuristic browser intelligence interface focused on diagnostics, capability checks, privacy-aware telemetry and modular UI systems."
-          }),
-          createElement("div", {
-            className: "hero-meta-grid",
-            children: [
-              createElement("span", { text: "Safe mode active" }),
-              createElement("span", { text: "Local runtime" }),
-              createElement("span", { text: "No backend required" })
-            ]
+            text: "A clean diagnostics surface for browser capabilities, runtime details and passive telemetry. No camera, microphone, geolocation, USB or Bluetooth prompts run automatically."
           }),
           createElement("div", {
             className: "hero-actions",
             children: [scanButton, terminalButton]
+          }),
+          createElement("div", {
+            className: "signal-row",
+            children: [
+              createSignalPill("local runtime"),
+              createSignalPill("no invasive prompts"),
+              createSignalPill("static deploy"),
+              createSignalPill("ES modules")
+            ]
           })
         ]
       }),
-      createElement("div", {
-        className: "hero-right is-revealed",
+      createElement("aside", {
+        className: "scope-panel is-revealed",
         children: [
           createElement("div", {
-            className: "scanner-visual",
+            className: "scope-visual",
             attrs: { "aria-hidden": "true" },
             children: [
-              createElement("span", { className: "scanner-ring ring-a" }),
-              createElement("span", { className: "scanner-ring ring-b" }),
-              createElement("span", { className: "scanner-core" }),
-              createElement("span", { className: "scanner-sweep" })
+              createElement("span", { className: "scope-sweep" }),
+              createElement("span", { className: "scope-core", text: "LAB" })
             ]
           }),
-          createElement("div", {
-            className: "hero-stats-grid",
-            children: [
-              createStat("PRIVACY SCORE", "SAFE", 74),
-              createStat("ENTROPY", "READY"),
-              createStat("SECURITY", "STABLE"),
-              createStat("TELEMETRY", "ACTIVE")
-            ]
+          createElement("p", {
+            className: "scope-copy",
+            text: "This lab is a showcase experiment: useful for understanding a browser environment, intentionally conservative about sensitive APIs."
           })
         ]
       })
     ]
-  });
-}
-
-function renderModuleSummary() {
-  return createElement("section", {
-    className: "module-summary",
-    attrs: { id: "module-summary", "aria-live": "polite" }
   });
 }
 
@@ -151,33 +176,10 @@ function createSummaryCard(label, value, variant = "available") {
   });
 }
 
-function createStat(label, value, progress = null) {
-  return createElement("div", {
-    className: "hero-stat-card",
-    children: [
-      createElement("div", { className: "stat-label", text: label }),
-      createElement("div", { className: "stat-value", text: value }),
-      progress === null ? "" : createElement("div", {
-        className: "stat-progress",
-        children: [
-          createElement("div", {
-            className: "stat-progress-bar",
-            attrs: { style: `width:${progress}%` }
-          })
-        ]
-      })
-    ].filter(Boolean)
-  });
-}
-
-function renderOverlay() {
+function renderModuleSummary() {
   return createElement("section", {
-    attrs: { id: "performance-overlay" },
-    children: [
-      createOverlayCard("FPS", "60", "fps-counter"),
-      createOverlayCard("LATENCY", "0ms", "latency-counter"),
-      createOverlayCard("MEMORY", "--", "memory-counter")
-    ]
+    className: "summary-grid",
+    attrs: { id: "module-summary", "aria-live": "polite" }
   });
 }
 
@@ -191,10 +193,68 @@ function createOverlayCard(label, value, id) {
   });
 }
 
+function renderOverlay() {
+  return createElement("section", {
+    attrs: { id: "performance-overlay", "aria-label": "Runtime overlay" },
+    children: [
+      createOverlayCard("FPS", "60", "fps-counter"),
+      createOverlayCard("Latency", "0ms", "latency-counter"),
+      createOverlayCard("Memory", "--", "memory-counter")
+    ]
+  });
+}
+
 function renderGridHeader() {
   return createElement("div", {
     className: "grid-header",
     attrs: { id: "grid-header" }
+  });
+}
+
+function renderWorkbench() {
+  const state = getState();
+  const searchInput = createElement("input", {
+    attrs: {
+      type: "text",
+      id: "search-input",
+      "aria-label": "Search browser signals",
+      placeholder: "Search signals...",
+      autocomplete: "off"
+    }
+  });
+
+  const sidebarNav = createElement("nav", { attrs: { id: "sidebar-nav", "aria-label": "Signal categories" } });
+  sidebarNav.append(renderSidebar({
+    activeGroup: state.activeGroup,
+    onGroupSelect: (activeGroup) => setState({ activeGroup }),
+    modules: state.telemetry
+  }));
+
+  const sidebar = createElement("aside", {
+    className: "sidebar-panel",
+    children: [
+      createElement("div", { className: "eyebrow", text: "Signal filters" }),
+      createElement("h2", { className: "sidebar-heading", text: "Browse modules" }),
+      createElement("p", {
+        className: "sidebar-description",
+        text: "Filter by category or search values currently visible in the passive diagnostics grid."
+      }),
+      searchInput,
+      sidebarNav
+    ]
+  });
+
+  const grid = createElement("section", { attrs: { id: "telemetry-grid", "aria-live": "polite" } });
+  const panel = createElement("section", {
+    className: "grid-panel",
+    attrs: { id: "signals" },
+    children: [renderGridHeader(), grid]
+  });
+
+  bindSearch(searchInput);
+  return createElement("section", {
+    className: "lab-workbench",
+    children: [sidebar, panel]
   });
 }
 
@@ -203,18 +263,21 @@ function renderFooter() {
     attrs: { id: "footer" },
     children: [
       createElement("div", {
-        className: "footer-left",
+        className: "footer-inner",
         children: [
-          createElement("div", { className: "footer-logo", text: APP_NAME }),
-          createElement("div", { className: "footer-description", text: "Browser Intelligence & Telemetry Interface" })
-        ]
-      }),
-      createElement("div", {
-        className: "footer-right",
-        children: [
-          createElement("div", { className: "footer-item", text: BUILD_NAME }),
-          createElement("div", { className: "footer-item", text: "Vanilla JS" }),
-          createElement("div", { className: "footer-item", text: "Experimental" })
+          createElement("div", {
+            children: [
+              createElement("strong", { text: "lab.faysk.dev" }),
+              createElement("div", { className: "footer-description", text: "A browser diagnostics experiment by Faysk." })
+            ]
+          }),
+          createElement("div", {
+            className: "project-links",
+            children: [
+              createElement("span", { text: APP_VERSION }),
+              createElement("span", { text: BUILD_NAME })
+            ]
+          })
         ]
       })
     ]
@@ -222,91 +285,36 @@ function renderFooter() {
 }
 
 function renderShell() {
-  const state = getState();
-  const searchInput = createElement("input", {
-    attrs: {
-      type: "text",
-      id: "search-input",
-      "aria-label": "Search telemetry modules",
-      placeholder: "Search modules...",
-      autocomplete: "off"
-    }
-  });
-
-  const sidebarNav = createElement("nav", { attrs: { id: "sidebar-nav", "aria-label": "Module categories" } });
-  sidebarNav.append(renderSidebar({
-    activeGroup: state.activeGroup,
-    onGroupSelect: (activeGroup) => setState({ activeGroup }),
-    modules: state.telemetry
-  }));
-
-  const sidebar = createElement("aside", {
-    attrs: { id: "sidebar" },
+  return createElement("div", {
+    className: "app-shell",
     children: [
-      createElement("div", {
-        className: "sidebar-top",
-        children: [
-          createElement("div", {
-            className: "logo-container",
-            children: [
-              createElement("div", { className: "logo-glow" }),
-              createElement("h1", { className: "logo-text", text: APP_NAME })
-            ]
-          }),
-          createElement("p", { className: "sidebar-description", text: "Browser Intelligence Interface" })
-        ]
-      }),
-      createElement("div", {
-        className: "sidebar-status",
-        children: [
-          createElement("div", {
-            className: "status-card",
-            children: [
-              createElement("span", { className: "status-dot" }),
-              createElement("span", { className: "status-text", text: "ONLINE" })
-            ]
-          })
-        ]
-      }),
-      createElement("div", { className: "sidebar-search", children: [searchInput] }),
-      sidebarNav,
-      createElement("div", {
-        className: "sidebar-footer",
-        children: [
-          createElement("div", { className: "sidebar-version", text: APP_VERSION }),
-          createElement("div", { className: "sidebar-build", text: BUILD_NAME })
-        ]
-      })
+      renderTopbar(),
+      renderHero(),
+      renderModuleSummary(),
+      renderOverlay(),
+      renderWorkbench(),
+      renderTerminal(),
+      renderFooter()
     ]
   });
+}
 
-  const grid = createElement("section", { attrs: { id: "telemetry-grid", "aria-live": "polite" } });
-  const main = createElement("main", {
-    attrs: { id: "main-content", tabindex: "-1" },
-    children: [renderCommandBar(), renderHero(), renderModuleSummary(), renderTerminal(), renderGridHeader(), grid, renderOverlay(), renderFooter()]
+function filterTelemetry() {
+  const { telemetry, activeGroup, searchTerm } = getState();
+  return telemetry.filter((module) => {
+    const matchesGroup = activeGroup === "all" || module.group === activeGroup;
+    const matchesSearch = !searchTerm || createSearchIndex(module).includes(searchTerm);
+    return matchesGroup && matchesSearch;
   });
-
-  const shell = createElement("div", {
-    className: "app-shell",
-    children: [sidebar, main]
-  });
-
-  bindSearch(searchInput);
-  return shell;
 }
 
 function renderTelemetryGrid() {
   const grid = qs("#telemetry-grid");
   if (!grid) return;
 
-  const { telemetry, activeGroup, searchTerm } = getState();
-  const filtered = telemetry.filter((module) => {
-    const matchesGroup = activeGroup === "all" || module.group === activeGroup;
-    const matchesSearch = !searchTerm || createSearchIndex(module).includes(searchTerm);
-    return matchesGroup && matchesSearch;
-  });
-
+  const filtered = filterTelemetry();
   clear(grid);
+
   if (!filtered.length) {
     grid.append(createEmptyState());
     return;
@@ -322,7 +330,7 @@ function updateSummary() {
   const stats = getTelemetryStats(getState().telemetry);
   clear(summary);
   summary.append(
-    createSummaryCard("Modules", stats.total, "total"),
+    createSummaryCard("Signals", stats.total, "total"),
     createSummaryCard("Available", stats.available, "available"),
     createSummaryCard("Permission gated", stats["permission-required"], "permission"),
     createSummaryCard("Unsupported", stats.unsupported, "unsupported")
@@ -333,20 +341,17 @@ function updateGridHeader() {
   const header = qs("#grid-header");
   if (!header) return;
 
-  const { telemetry, activeGroup, searchTerm } = getState();
-  const visible = telemetry.filter((module) => {
-    const matchesGroup = activeGroup === "all" || module.group === activeGroup;
-    return matchesGroup && (!searchTerm || createSearchIndex(module).includes(searchTerm));
-  });
+  const { activeGroup, searchTerm } = getState();
+  const visible = filterTelemetry();
   const activeLabel = activeGroup === "all"
-    ? "All modules"
+    ? "All signals"
     : MODULE_GROUPS.find((group) => group.id === activeGroup)?.label || activeGroup;
 
   clear(header);
   header.append(
     createElement("div", {
       children: [
-        createElement("span", { className: "grid-eyebrow", text: "Telemetry matrix" }),
+        createElement("span", { className: "grid-eyebrow", text: "Signal matrix" }),
         createElement("h2", { className: "grid-title", text: activeLabel })
       ]
     }),

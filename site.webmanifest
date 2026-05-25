@@ -1,0 +1,16 @@
+{
+  "name": "lab.faysk.dev",
+  "short_name": "Faysk Lab",
+  "description": "Privacy-aware browser diagnostics experiment.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070a0d",
+  "theme_color": "#070a0d",
+  "icons": [
+    {
+      "src": "/assets/icons/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ]
+}

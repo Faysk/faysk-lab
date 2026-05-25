@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Faysk Lab mark">
+  <rect x="8" y="8" width="144" height="144" rx="34" fill="#070a0d" stroke="#82e8ff" stroke-opacity=".34" stroke-width="2"/>
+  <circle cx="80" cy="80" r="45" fill="none" stroke="#82e8ff" stroke-width="12"/>
+  <circle cx="80" cy="80" r="17" fill="#b9ffcf"/>
+  <path d="M80 22v24M80 114v24M22 80h24M114 80h24" stroke="#f4f8f4" stroke-opacity=".72" stroke-width="10" stroke-linecap="round"/>
+  <path d="M105 55l20 25-20 25" fill="none" stroke="#ff91bd" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

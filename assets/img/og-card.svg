@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="lab.faysk.dev preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070a0d"/>
+      <stop offset=".56" stop-color="#101a20"/>
+      <stop offset="1" stop-color="#0a1718"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".76" cy=".25" r=".62">
+      <stop offset="0" stop-color="#82e8ff" stop-opacity=".34"/>
+      <stop offset=".56" stop-color="#b9ffcf" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g opacity=".12" stroke="#f4f8f4">
+    <path d="M0 90h1200M0 180h1200M0 270h1200M0 360h1200M0 450h1200M0 540h1200"/>
+    <path d="M120 0v630M240 0v630M360 0v630M480 0v630M600 0v630M720 0v630M840 0v630M960 0v630M1080 0v630"/>
+  </g>
+  <rect x="76" y="78" width="1048" height="474" rx="34" fill="#101a20" fill-opacity=".74" stroke="#f4f8f4" stroke-opacity=".14"/>
+  <text x="112" y="180" fill="#82e8ff" font-family="Consolas, monospace" font-size="32" font-weight="700">browser observatory</text>
+  <text x="112" y="315" fill="#f4f8f4" font-family="Arial, sans-serif" font-size="108" font-weight="800">lab.faysk.dev</text>
+  <text x="116" y="386" fill="#a8b6ba" font-family="Arial, sans-serif" font-size="34">privacy-aware diagnostics and passive telemetry</text>
+  <g transform="translate(882 176)">
+    <rect width="164" height="164" rx="36" fill="#070a0d" stroke="#82e8ff" stroke-opacity=".34" stroke-width="3"/>
+    <circle cx="82" cy="82" r="46" fill="none" stroke="#82e8ff" stroke-width="12"/>
+    <circle cx="82" cy="82" r="17" fill="#b9ffcf"/>
+    <path d="M82 23v24M82 117v24M23 82h24M117 82h24" stroke="#f4f8f4" stroke-opacity=".72" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>

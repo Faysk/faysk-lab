@@ -1,6 +1,6 @@
-export const APP_NAME = "lab.faysk.dev";
+export const APP_NAME = "Faysk Lab";
 export const APP_VERSION = "0.1-alpha";
-export const BUILD_NAME = "lab-build";
+export const BUILD_NAME = "browser-observatory";
 
 export const MODULE_STATUSES = {
   available: "available",
@@ -11,12 +11,12 @@ export const MODULE_STATUSES = {
 export const MODULE_GROUPS = [
   { id: "browser", label: "Browser", icon: "BR" },
   { id: "system", label: "System", icon: "SY" },
-  { id: "gpu", label: "GPU", icon: "GP" },
+  { id: "gpu", label: "Graphics", icon: "GX" },
   { id: "fingerprint", label: "Fingerprint", icon: "FP" },
   { id: "network", label: "Network", icon: "NW" },
-  { id: "geolocation", label: "Geolocation", icon: "GL" },
+  { id: "geolocation", label: "Locale", icon: "LC" },
   { id: "media", label: "Media", icon: "AV" },
-  { id: "telemetry", label: "Telemetry", icon: "TM" },
+  { id: "telemetry", label: "Runtime", icon: "RT" },
   { id: "security", label: "Security", icon: "SC" },
   { id: "experimental", label: "Experimental", icon: "XP" }
 ];
