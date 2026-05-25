@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment and local overrides
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build and cache output
+dist/
+build/
+.cache/
+.parcel-cache/
+.vite/
+coverage/
+
+# Temporary validation/browser artifacts
+ui-check*.png
+*.tmp
+tmp/
+temp/
+.tmp-*/
+.tmp-edge-*/
+
+# Local static-server scratch files
+server*.out.log
+server*.err.log

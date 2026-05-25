@@ -1,0 +1,10 @@
+/assets/js/*
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/css/*
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*
+  X-Content-Type-Options: nosniff
