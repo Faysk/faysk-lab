@@ -9,6 +9,8 @@ export function getFpsInfo() {
       ? live.confidence || "rAF unavailable"
       : "measure in progress";
   const frameMs = Number.isFinite(live?.frameMs) ? `${live.frameMs.toFixed(2)} ms` : "measure in progress";
+  const renderCadence = live?.renderDisplay || "measure in progress";
+  const support = live?.supportDisplay || "measure in progress";
 
   return {
     id: "telemetry-fps",
@@ -20,7 +22,9 @@ export function getFpsInfo() {
     items: [
       { label: "Measured", value: measured },
       { label: "Frame Time", value: frameMs },
-      { label: "Method", value: "requestAnimationFrame median" }
+      { label: "Render Cadence", value: renderCadence },
+      { label: "Support", value: support },
+      { label: "Method", value: "iframe rAF probe" }
     ]
   };
 }

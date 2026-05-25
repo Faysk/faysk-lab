@@ -10,6 +10,13 @@ function median(values) {
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
+function percentile(values, ratio) {
+  if (!values.length) return NaN;
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.floor((sorted.length - 1) * ratio)));
+  return sorted[index];
+}
+
 function nearestCommonRate(value) {
   if (!Number.isFinite(value)) return null;
   return COMMON_REFRESH_RATES.reduce((nearest, rate) => {
@@ -19,6 +26,108 @@ function nearestCommonRate(value) {
 
 function formatHz(value) {
   return Number.isFinite(value) ? `${Math.round(value)} Hz` : "--";
+}
+
+function frameTolerance(frameMs) {
+  return Math.max(0.35, frameMs * 0.18);
+}
+
+function getRefreshCandidate(deltas, medianFrameMs) {
+  if (!deltas.length) return null;
+
+  const minimumHits = Math.max(12, Math.ceil(deltas.length * 0.1));
+  const candidates = COMMON_REFRESH_RATES
+    .map((rate) => {
+      const expectedFrameMs = 1000 / rate;
+      const tolerance = frameTolerance(expectedFrameMs);
+      const closeDeltas = deltas.filter((delta) => Math.abs(delta - expectedFrameMs) <= tolerance);
+      const support = closeDeltas.length / deltas.length;
+      const closeMedian = median(closeDeltas);
+      const error = Number.isFinite(closeMedian)
+        ? Math.abs(closeMedian - expectedFrameMs) / expectedFrameMs
+        : Infinity;
+
+      return {
+        rate,
+        expectedFrameMs,
+        measuredFrameMs: closeMedian,
+        hits: closeDeltas.length,
+        support,
+        error
+      };
+    })
+    .filter((candidate) => {
+      return candidate.hits >= minimumHits
+        && candidate.error <= 0.18
+        && candidate.expectedFrameMs <= medianFrameMs + frameTolerance(candidate.expectedFrameMs);
+    })
+    .sort((a, b) => {
+      if (b.rate !== a.rate) return b.rate - a.rate;
+      if (b.support !== a.support) return b.support - a.support;
+      return a.error - b.error;
+    });
+
+  return candidates[0] || null;
+}
+
+function analyzeRefreshDeltas(deltas, timestampDeltas, source) {
+  const cleaned = deltas.filter((delta) => Number.isFinite(delta) && delta >= 1.8 && delta < 80);
+  const cleanedTimestamp = timestampDeltas.filter((delta) => Number.isFinite(delta) && delta >= 1.8 && delta < 80);
+
+  if (!cleaned.length) {
+    return {
+      hz: NaN,
+      roundedHz: null,
+      frameMs: NaN,
+      medianFrameMs: NaN,
+      renderHz: null,
+      jitter: NaN,
+      confidence: "timeout",
+      source,
+      samples: 0,
+      support: 0,
+      display: "--"
+    };
+  }
+
+  const medianFrameMs = median(cleaned);
+  const fastFrameMs = percentile(cleaned, 0.1);
+  const candidate = getRefreshCandidate(cleaned, medianFrameMs);
+  const rawHz = Number.isFinite(medianFrameMs) && medianFrameMs > 0 ? 1000 / medianFrameMs : NaN;
+  const renderHz = nearestCommonRate(rawHz);
+  const selectedHz = candidate?.rate || nearestCommonRate(Number.isFinite(fastFrameMs) ? 1000 / fastFrameMs : rawHz) || rawHz;
+  const selectedFrameMs = candidate?.measuredFrameMs || (Number.isFinite(selectedHz) ? 1000 / selectedHz : medianFrameMs);
+  const matchingDeltas = candidate
+    ? cleaned.filter((delta) => Math.abs(delta - candidate.expectedFrameMs) <= frameTolerance(candidate.expectedFrameMs))
+    : cleaned;
+  const jitter = matchingDeltas.length
+    ? median(matchingDeltas.map((delta) => Math.abs(delta - median(matchingDeltas))))
+    : NaN;
+  const timestampMedian = median(cleanedTimestamp);
+  const cadenceDiffers = Number.isFinite(renderHz) && Number.isFinite(selectedHz) && Math.abs(renderHz - selectedHz) >= 20;
+
+  return {
+    hz: selectedHz,
+    roundedHz: nearestCommonRate(selectedHz),
+    frameMs: selectedFrameMs,
+    medianFrameMs,
+    fastFrameMs,
+    renderHz,
+    rawHz,
+    jitter,
+    timestampFrameMs: timestampMedian,
+    confidence: candidate
+      ? cadenceDiffers
+        ? "display-ceiling"
+        : "measured"
+      : "measured",
+    source,
+    samples: cleaned.length,
+    support: candidate?.support || 1,
+    supportDisplay: candidate ? `${Math.round(candidate.support * 100)}%` : "median",
+    renderDisplay: formatHz(renderHz),
+    display: formatHz(nearestCommonRate(selectedHz) || selectedHz)
+  };
 }
 
 export function getConnectionInfo() {
@@ -198,68 +307,160 @@ export async function measureLatency(samples = 5) {
   };
 }
 
-export async function measureRefreshRate({ frames = 180, warmup = 20, timeout = 6000 } = {}) {
+function createRefreshProbeFrame() {
+  const frame = document.createElement("iframe");
+  frame.className = "refresh-probe-frame";
+  frame.setAttribute("aria-hidden", "true");
+  frame.setAttribute("tabindex", "-1");
+  frame.srcdoc = `<!doctype html>
+<html>
+  <head>
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #05070a;
+      }
+      body::before {
+        content: "";
+        position: absolute;
+        inset: 12px;
+        border-radius: 999px;
+        background: #82e8ff;
+        transform: translate3d(0, 0, 0);
+      }
+    </style>
+  </head>
+  <body></body>
+</html>`;
+  document.body.append(frame);
+  return frame;
+}
+
+function waitForFrameLoad(frame) {
+  return new Promise((resolve) => {
+    const done = () => resolve(frame.contentWindow || window);
+
+    if (frame.contentDocument?.readyState === "complete") {
+      done();
+      return;
+    }
+
+    frame.addEventListener("load", done, { once: true });
+    setTimeout(done, 120);
+  });
+}
+
+function waitForPaints(targetWindow, count = 6) {
+  return new Promise((resolve) => {
+    let remaining = count;
+    let settled = false;
+    const timeout = setTimeout(done, 700);
+
+    function done() {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      resolve();
+    }
+
+    function tick() {
+      if (settled) return;
+      remaining -= 1;
+      if (remaining <= 0) {
+        done();
+        return;
+      }
+
+      targetWindow.requestAnimationFrame(tick);
+    }
+
+    targetWindow.requestAnimationFrame(tick);
+  });
+}
+
+function sampleRefreshWindow(targetWindow, {
+  minDuration = 1350,
+  minSamples = 90,
+  timeout = 5200
+} = {}) {
+  return new Promise((resolve) => {
+    const deltas = [];
+    const timestampDeltas = [];
+    let previousArrival = null;
+    let previousTimestamp = null;
+    let startedAt = null;
+    let settled = false;
+    const timeoutId = setTimeout(() => finish("timeout"), timeout);
+
+    function finish(reason = "measured") {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      resolve({ deltas, timestampDeltas, reason });
+    }
+
+    function tick(timestamp) {
+      if (settled) return;
+
+      const arrival = targetWindow.performance.now();
+      if (startedAt === null) startedAt = arrival;
+
+      if (previousArrival !== null) {
+        const arrivalDelta = arrival - previousArrival;
+        const timestampDelta = timestamp - previousTimestamp;
+        if (arrivalDelta > 0 && arrivalDelta < 80) deltas.push(arrivalDelta);
+        if (timestampDelta > 0 && timestampDelta < 80) timestampDeltas.push(timestampDelta);
+      }
+
+      previousArrival = arrival;
+      previousTimestamp = timestamp;
+
+      if ((arrival - startedAt >= minDuration && deltas.length >= minSamples) || arrival - startedAt >= timeout) {
+        finish(arrival - startedAt >= timeout ? "timeout" : "measured");
+        return;
+      }
+
+      targetWindow.requestAnimationFrame(tick);
+    }
+
+    targetWindow.requestAnimationFrame(tick);
+  });
+}
+
+export async function measureRefreshRate({ timeout = 6200 } = {}) {
   if (document.visibilityState !== "visible") {
     return {
       hz: NaN,
       roundedHz: null,
       confidence: "tab-hidden",
+      source: "visibility",
       samples: 0,
+      support: 0,
       display: "--"
     };
   }
 
-  return new Promise((resolve) => {
-    const timestamps = [];
-    const startedAt = performance.now();
-    let previous = null;
-    let settled = false;
-    const timeoutId = setTimeout(() => finish("timeout"), timeout);
+  const root = document.documentElement;
+  const frame = createRefreshProbeFrame();
+  root.classList.add("is-measuring-refresh");
 
-    function finish(confidence = "measured") {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeoutId);
-      const deltas = timestamps.slice(warmup);
-      const med = median(deltas);
-      const hz = Number.isFinite(med) && med > 0 ? 1000 / med : NaN;
-      const roundedHz = nearestCommonRate(hz);
-      const jitter = deltas.length ? median(deltas.map((delta) => Math.abs(delta - med))) : NaN;
-      resolve({
-        hz,
-        roundedHz,
-        frameMs: med,
-        jitter,
-        confidence,
-        samples: deltas.length,
-        display: formatHz(roundedHz || hz)
-      });
-    }
+  try {
+    const targetWindow = await waitForFrameLoad(frame);
+    await waitForPaints(targetWindow, 8);
+    const sample = await sampleRefreshWindow(targetWindow, { timeout });
+    const result = analyzeRefreshDeltas(sample.deltas, sample.timestampDeltas, "iframe-probe");
 
-    function tick(now) {
-      if (settled) return;
-
-      if (previous !== null) {
-        const delta = now - previous;
-        if (delta > 0 && delta < 80) timestamps.push(delta);
-      }
-      previous = now;
-
-      if (timestamps.length >= frames + warmup) {
-        finish();
-        return;
-      }
-
-      if (now - startedAt > timeout) {
-        finish("timeout");
-        return;
-      }
-
-      requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
-  });
+    return {
+      ...result,
+      confidence: result.samples ? result.confidence : sample.reason
+    };
+  } finally {
+    root.classList.remove("is-measuring-refresh");
+    frame.remove();
+  }
 }
 
 export function getGpuSummary() {

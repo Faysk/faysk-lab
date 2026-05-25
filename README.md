@@ -177,12 +177,13 @@ assets/js/modules/live/diagnostics.js
 
 Metodo atual:
 
-- usa `requestAnimationFrame`;
-- coleta deltas entre frames;
-- descarta frames de warmup;
-- calcula a mediana;
-- converte `frameMs` para Hz com `1000 / frameMs`;
-- aproxima para uma lista de taxas comuns: 60, 120, 144, 165, 180, 240, 360 etc.
+- cria um iframe minimo e visivel quase transparente como probe;
+- pausa efeitos pesados da interface durante a amostragem;
+- usa `requestAnimationFrame` dentro desse probe;
+- mede os intervalos com `performance.now()`;
+- analisa as amostras por histograma de frame time;
+- escolhe a maior taxa comum com suporte suficiente;
+- tambem exibe render cadence, suporte, frame time e jitter.
 
 Por que isso funciona:
 
@@ -192,15 +193,17 @@ Por que isso funciona:
 Limitacoes:
 
 - se a aba estiver oculta, o browser pode pausar rAF;
-- em headless, iframe oculto ou economia de energia, rAF pode nao disparar;
+- em headless, iframe oculto, economia de energia ou aba em segundo plano, rAF pode nao disparar corretamente;
 - em setups multi-monitor, o resultado depende do monitor onde a janela esta;
-- se o browser estiver limitado a 60Hz, o lab tambem medira 60Hz.
+- se o browser estiver limitado a 60Hz, o lab tambem medira 60Hz;
+- se a pagina estiver pesada, a render cadence pode cair abaixo do teto real do monitor.
 
 Melhor forma possivel no browser:
 
 - manter a medicao via rAF com amostras suficientes;
 - rodar somente com a aba visivel;
-- mostrar confianca, amostras, frame time e jitter;
+- usar uma superficie de medicao leve;
+- mostrar confianca, amostras, frame time, suporte, render cadence e jitter;
 - opcionalmente adicionar um teste visual estilo motion track para o usuario comparar.
 
 Melhor forma fora do browser:

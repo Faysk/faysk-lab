@@ -227,6 +227,36 @@
   animation: sweep var(--sweep-duration) linear infinite;
 }
 
+.refresh-probe-frame {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 2147483646;
+  width: 180px;
+  height: 48px;
+  border: 0;
+  opacity: 0.01;
+  pointer-events: none;
+}
+
+html.is-measuring-refresh #background-glow,
+html.is-measuring-refresh .scope-sweep {
+  animation-play-state: paused !important;
+}
+
+html.is-measuring-refresh .hero-panel,
+html.is-measuring-refresh .scope-panel,
+html.is-measuring-refresh .summary-card,
+html.is-measuring-refresh .telemetry-card,
+html.is-measuring-refresh .overlay-card,
+html.is-measuring-refresh .sidebar-panel,
+html.is-measuring-refresh .grid-panel,
+html.is-measuring-refresh #live-terminal,
+html.is-measuring-refresh .live-card {
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
 .scope-core {
   position: relative;
   z-index: 1;

@@ -453,6 +453,8 @@ function updateRefreshCard(refresh) {
     detail,
     pairs: [
       { label: "Frame time", value: Number.isFinite(refresh.frameMs) ? `${refresh.frameMs.toFixed(2)} ms` : "--" },
+      { label: "Render cadence", value: refresh.renderDisplay || "--" },
+      { label: "Support", value: refresh.supportDisplay || "--" },
       { label: "Jitter", value: Number.isFinite(refresh.jitter) ? `${refresh.jitter.toFixed(2)} ms` : "--" }
     ]
   });
@@ -555,13 +557,13 @@ async function runLiveDashboard({ updateModules = true } = {}) {
   updateOverlay();
 
   const tasks = [
-    measureRefreshRate({ frames: 120, warmup: 12, timeout: 5200 })
+    measureRefreshRate({ timeout: 6200 })
       .then((refresh) => {
         const data = mergeLiveDiagnostics({ refresh });
         updateRefreshCard(refresh);
         updateOverlay();
         if (Number.isFinite(refresh.roundedHz || refresh.hz)) {
-          log(`Display refresh measured at ${refresh.display}.`, "info");
+          log(`Display refresh measured at ${refresh.display} via ${refresh.source}.`, "info");
         } else {
           log(`Display refresh measurement did not receive animation frames (${refresh.confidence}).`, "info");
         }
