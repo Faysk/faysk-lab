@@ -21,7 +21,8 @@
   }
 
   .summary-grid,
-  #performance-overlay {
+  #performance-overlay,
+  .live-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -58,12 +59,14 @@
 
   .summary-grid,
   #performance-overlay,
+  .live-grid,
   #telemetry-grid {
     grid-template-columns: 1fr;
   }
 
   .hero-panel,
   .scope-panel,
+  .live-card,
   .summary-card,
   .telemetry-card,
   .overlay-card,
@@ -76,6 +79,8 @@
   }
 
   .hero-description,
+  .section-copy,
+  .live-detail,
   .card-description,
   .scope-copy,
   .sidebar-description,
@@ -83,6 +88,11 @@
     overflow-wrap: anywhere;
     width: min(100%, 320px);
     max-width: 320px;
+  }
+
+  .live-pair {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
   }
 
   .hero-title,

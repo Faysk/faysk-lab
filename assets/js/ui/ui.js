@@ -3,10 +3,24 @@ import { createElement, qs, clear } from "../core/dom.js";
 import { log } from "../core/logger.js";
 import { getState, setState } from "../state.js";
 import { collectTelemetry } from "../modules/index.js";
+import {
+  getBatterySummary,
+  getBrowserSummary,
+  getClientLocation,
+  getConnectionInfo,
+  getGpuSummary,
+  getHardwareSummary,
+  getScreenSummary,
+  getStorageSummary,
+  measureLatency,
+  measureRefreshRate
+} from "../modules/live/diagnostics.js";
 import { createEmptyState, createTelemetryCard } from "./cards.js";
 import { renderSidebar } from "./sidebar.js";
 import { renderTerminal } from "./terminal.js";
 import { bindSearch } from "./search.js";
+
+let liveScanPromise = null;
 
 function getTelemetryStats(telemetry) {
   return telemetry.reduce((stats, module) => {
@@ -89,6 +103,32 @@ function createSignalPill(text) {
   return createElement("span", { className: "signal-pill", text });
 }
 
+function formatPair(label, value) {
+  return createElement("div", {
+    className: "live-pair",
+    children: [
+      createElement("span", { text: label }),
+      createElement("strong", { text: value || "unavailable" })
+    ]
+  });
+}
+
+function createLiveCard(id, label, value = "measuring...", detail = "Collecting live signal", pairs = []) {
+  return createElement("article", {
+    className: "live-card",
+    attrs: { id: `live-${id}` },
+    children: [
+      createElement("span", { className: "live-label", text: label }),
+      createElement("strong", { className: "live-value", text: value }),
+      createElement("p", { className: "live-detail", text: detail }),
+      createElement("div", {
+        className: "live-pairs",
+        children: pairs.map((pair) => formatPair(pair.label, pair.value))
+      })
+    ]
+  });
+}
+
 function renderHero() {
   const scanButton = createElement("button", {
     className: "primary-button",
@@ -102,11 +142,20 @@ function renderHero() {
     text: "Open terminal"
   });
 
-  scanButton.addEventListener("click", () => {
-    const telemetry = collectTelemetry();
+  scanButton.addEventListener("click", async () => {
+    if (scanButton.disabled) return;
+
+    scanButton.disabled = true;
     const nextCount = getState().scanCount + 1;
-    setState({ telemetry, scanCount: nextCount });
-    log(`Passive scan ${nextCount} completed without permission prompts.`, "info");
+    setState({ scanCount: nextCount });
+    log(`Passive scan ${nextCount} started without permission prompts.`, "info");
+
+    try {
+      await refreshLiveDashboard();
+      log(`Passive scan ${nextCount} updated live and advanced signals.`, "info");
+    } finally {
+      scanButton.disabled = false;
+    }
   });
 
   terminalButton.addEventListener("click", () => {
@@ -150,7 +199,7 @@ function renderHero() {
         children: [
           createElement("div", {
             className: "scope-visual",
-            attrs: { "aria-hidden": "true" },
+            attrs: { "aria-hidden": "true", "data-hz": "measuring" },
             children: [
               createElement("span", { className: "scope-sweep" }),
               createElement("span", { className: "scope-core", text: "LAB" })
@@ -160,6 +209,37 @@ function renderHero() {
             className: "scope-copy",
             text: "This lab is a showcase experiment: useful for understanding a browser environment, intentionally conservative about sensitive APIs."
           })
+        ]
+      })
+    ]
+  });
+}
+
+function renderLiveDashboard() {
+  return createElement("section", {
+    className: "live-section",
+    attrs: { id: "live-overview", "aria-live": "polite" },
+    children: [
+      createElement("div", {
+        className: "section-heading",
+        children: [
+          createElement("div", { className: "eyebrow", text: "Live overview" }),
+          createElement("h2", { className: "section-title", text: "What this browser can actually report." }),
+          createElement("p", {
+            className: "section-copy",
+            text: "These values are measured from browser APIs, Cloudflare request metadata and live timing loops. Some hardware details are intentionally approximate because browsers protect that information."
+          })
+        ]
+      }),
+      createElement("div", {
+        className: "live-grid",
+        children: [
+          createLiveCard("refresh", "Display refresh", "measuring...", "requestAnimationFrame timing"),
+          createLiveCard("network", "Network", "measuring...", "IP, route and latency"),
+          createLiveCard("hardware", "Hardware", "reading...", "browser-exposed device hints"),
+          createLiveCard("gpu", "Graphics", "reading...", "WebGL renderer information"),
+          createLiveCard("storage", "Storage", "reading...", "browser storage quota"),
+          createLiveCard("screen", "Screen", "reading...", "viewport and display data")
         ]
       })
     ]
@@ -197,9 +277,9 @@ function renderOverlay() {
   return createElement("section", {
     attrs: { id: "performance-overlay", "aria-label": "Runtime overlay" },
     children: [
-      createOverlayCard("FPS", "60", "fps-counter"),
-      createOverlayCard("Latency", "0ms", "latency-counter"),
-      createOverlayCard("Memory", "--", "memory-counter")
+      createOverlayCard("Refresh", "--", "fps-counter"),
+      createOverlayCard("Latency", "--", "latency-counter"),
+      createOverlayCard("RAM hint", "--", "memory-counter")
     ]
   });
 }
@@ -248,7 +328,20 @@ function renderWorkbench() {
   const panel = createElement("section", {
     className: "grid-panel",
     attrs: { id: "signals" },
-    children: [renderGridHeader(), grid]
+    children: [
+      createElement("div", {
+        className: "advanced-heading",
+        children: [
+          createElement("span", { className: "eyebrow", text: "Advanced" }),
+          createElement("p", {
+            className: "section-copy",
+            text: "Detailed browser capability modules. These include availability checks, privacy-gated APIs and browser-specific signals."
+          })
+        ]
+      }),
+      renderGridHeader(),
+      grid
+    ]
   });
 
   bindSearch(searchInput);
@@ -290,6 +383,7 @@ function renderShell() {
     children: [
       renderTopbar(),
       renderHero(),
+      renderLiveDashboard(),
       renderModuleSummary(),
       renderOverlay(),
       renderWorkbench(),
@@ -297,6 +391,253 @@ function renderShell() {
       renderFooter()
     ]
   });
+}
+
+function setLiveCard(id, { value, detail, pairs = [] }) {
+  const card = qs(`#live-${id}`);
+  if (!card) return;
+
+  const valueEl = card.querySelector(".live-value");
+  const detailEl = card.querySelector(".live-detail");
+  const pairsEl = card.querySelector(".live-pairs");
+
+  if (valueEl) valueEl.textContent = value || "--";
+  if (detailEl) detailEl.textContent = detail || "";
+  if (pairsEl) {
+    pairsEl.replaceChildren(...pairs.map((pair) => formatPair(pair.label, pair.value)));
+  }
+}
+
+function setRadarRefresh(refresh) {
+  const visual = qs(".scope-visual");
+  if (!visual) return;
+
+  const hz = refresh.roundedHz || refresh.hz;
+  if (!Number.isFinite(hz)) return;
+
+  const duration = Math.max(0.22, Math.min(2.2, 60 / hz));
+  visual.style.setProperty("--sweep-duration", `${duration.toFixed(2)}s`);
+  visual.setAttribute("data-hz", `${Math.round(hz)} Hz`);
+}
+
+function mergeLiveDiagnostics(partial) {
+  const current = window.__fayskLiveDiagnostics || {};
+  window.__fayskLiveDiagnostics = {
+    ...current,
+    ...partial,
+    collectedAt: new Date()
+  };
+
+  return window.__fayskLiveDiagnostics;
+}
+
+function updateRefreshCard(refresh) {
+  setRadarRefresh(refresh);
+  const hasMeasurement = Number.isFinite(refresh.roundedHz || refresh.hz);
+  const value = hasMeasurement
+    ? refresh.display
+    : refresh.confidence === "tab-hidden"
+      ? "tab hidden"
+      : "rAF paused";
+  const detail = hasMeasurement
+    ? `${refresh.samples || 0} frame samples, ${refresh.confidence || "measured"}`
+    : "No animation frames received. Keep the tab visible to measure refresh rate.";
+  const visual = qs(".scope-visual");
+
+  if (!hasMeasurement && visual) {
+    visual.setAttribute("data-hz", refresh.confidence === "tab-hidden" ? "tab hidden" : "rAF paused");
+  }
+
+  setLiveCard("refresh", {
+    value,
+    detail,
+    pairs: [
+      { label: "Frame time", value: Number.isFinite(refresh.frameMs) ? `${refresh.frameMs.toFixed(2)} ms` : "--" },
+      { label: "Jitter", value: Number.isFinite(refresh.jitter) ? `${refresh.jitter.toFixed(2)} ms` : "--" }
+    ]
+  });
+}
+
+function updateNetworkCard(data) {
+  const location = data.location || {};
+  const latency = data.latency || {};
+  const locationParts = [location.city, location.region, location.country]
+    .filter((value) => value && value !== "unavailable");
+  const primaryValue = location.ip && location.ip !== "unavailable"
+    ? location.ip
+    : latency.display || "measuring...";
+
+  setLiveCard("network", {
+    value: primaryValue,
+    detail: locationParts.length ? locationParts.join(", ") : "IP route lookup pending or unavailable",
+    pairs: [
+      { label: "Latency", value: latency.display || "measuring..." },
+      { label: "ASN/Org", value: location.org || "pending" },
+      { label: "Provider", value: location.source || "pending" }
+    ]
+  });
+}
+
+function updateHardwareCard(data) {
+  const battery = data.battery || { level: "reading", status: "battery API" };
+
+  setLiveCard("hardware", {
+    value: data.hardware.cpuThreads,
+    detail: data.hardware.deviceMemory,
+    pairs: [
+      { label: "Connection", value: data.connection.effectiveType },
+      { label: "Downlink", value: data.connection.downlink },
+      { label: "Battery", value: `${battery.level} / ${battery.status}` }
+    ]
+  });
+}
+
+function updateGpuCard(data) {
+  setLiveCard("gpu", {
+    value: data.gpu.renderer,
+    detail: data.gpu.vendor,
+    pairs: [
+      { label: "WebGL", value: data.gpu.supported ? "available" : "unsupported" },
+      { label: "Platform", value: data.browser.platform }
+    ]
+  });
+}
+
+function updateStorageCard(storage) {
+  setLiveCard("storage", {
+    value: storage.quota,
+    detail: "Browser storage quota, not physical disk size",
+    pairs: [
+      { label: "Used", value: storage.usage },
+      { label: "Usage", value: storage.percent }
+    ]
+  });
+}
+
+function updateScreenCard(data) {
+  setLiveCard("screen", {
+    value: data.screen.resolution,
+    detail: `${data.screen.viewport} viewport / ${data.screen.pixelRatio} DPR`,
+    pairs: [
+      { label: "Color depth", value: data.screen.colorDepth },
+      { label: "Timezone", value: data.browser.timezone },
+      { label: "Language", value: data.browser.language }
+    ]
+  });
+}
+
+function refreshTelemetryFromLive() {
+  setState({ telemetry: collectTelemetry() });
+  renderTelemetryGrid();
+  updateSummary();
+  updateGridHeader();
+  updateSidebar();
+}
+
+async function runLiveDashboard({ updateModules = true } = {}) {
+  log("Measuring live browser signals...", "info");
+
+  setLiveCard("refresh", { value: "measuring...", detail: "requestAnimationFrame timing", pairs: [] });
+  setLiveCard("network", { value: "measuring...", detail: "IP, route and latency", pairs: [] });
+  setLiveCard("storage", { value: "reading...", detail: "browser storage quota", pairs: [] });
+
+  const initialData = mergeLiveDiagnostics({
+    browser: getBrowserSummary(),
+    connection: getConnectionInfo(),
+    gpu: getGpuSummary(),
+    hardware: getHardwareSummary(),
+    screen: getScreenSummary()
+  });
+
+  updateHardwareCard(initialData);
+  updateGpuCard(initialData);
+  updateScreenCard(initialData);
+  updateOverlay();
+
+  const tasks = [
+    measureRefreshRate({ frames: 120, warmup: 12, timeout: 5200 })
+      .then((refresh) => {
+        const data = mergeLiveDiagnostics({ refresh });
+        updateRefreshCard(refresh);
+        updateOverlay();
+        if (Number.isFinite(refresh.roundedHz || refresh.hz)) {
+          log(`Display refresh measured at ${refresh.display}.`, "info");
+        } else {
+          log(`Display refresh measurement did not receive animation frames (${refresh.confidence}).`, "info");
+        }
+        return data;
+      })
+      .catch((error) => {
+        setLiveCard("refresh", {
+          value: "unavailable",
+          detail: "Refresh measurement failed safely",
+          pairs: [{ label: "Reason", value: error.message }]
+        });
+      }),
+    measureLatency(5)
+      .then((latency) => {
+        const data = mergeLiveDiagnostics({ latency });
+        updateNetworkCard(data);
+        updateOverlay();
+        return data;
+      })
+      .catch((error) => {
+        const data = mergeLiveDiagnostics({ latency: { display: "--" } });
+        updateNetworkCard(data);
+        log(`Latency probe failed safely: ${error.message}`, "error");
+      }),
+    getClientLocation()
+      .then((location) => {
+        const data = mergeLiveDiagnostics({ location });
+        updateNetworkCard(data);
+        return data;
+      }),
+    getStorageSummary()
+      .then((storage) => {
+        mergeLiveDiagnostics({ storage });
+        updateStorageCard(storage);
+        return storage;
+      })
+      .catch((error) => {
+        const storage = { usage: "unsupported", quota: "unsupported", percent: error.message };
+        mergeLiveDiagnostics({ storage });
+        updateStorageCard(storage);
+      }),
+    getBatterySummary()
+      .then((battery) => {
+        const data = mergeLiveDiagnostics({ battery });
+        updateHardwareCard(data);
+        return battery;
+      })
+      .catch(() => {
+        const data = mergeLiveDiagnostics({ battery: { status: "unsupported", level: "unsupported" } });
+        updateHardwareCard(data);
+      })
+  ];
+
+  await Promise.allSettled(tasks);
+
+  if (updateModules) {
+    refreshTelemetryFromLive();
+  }
+
+  const data = window.__fayskLiveDiagnostics || {};
+  log(`Live scan complete: ${data.refresh?.display || "--"}, ${data.latency?.display || "--"} latency.`, "info");
+  return data;
+}
+
+async function refreshLiveDashboard(options = {}) {
+  if (!liveScanPromise) {
+    liveScanPromise = runLiveDashboard(options)
+      .catch((error) => {
+        log(`Live diagnostics failed safely: ${error.message}`, "error");
+      })
+      .finally(() => {
+        liveScanPromise = null;
+      });
+  }
+
+  return liveScanPromise;
 }
 
 function filterTelemetry() {
@@ -377,18 +718,20 @@ function updateSidebar() {
 }
 
 function updateOverlay() {
-  const state = getState();
+  const data = window.__fayskLiveDiagnostics || {};
   const fpsCounter = qs("#fps-counter");
   const latencyCounter = qs("#latency-counter");
   const memoryCounter = qs("#memory-counter");
 
   if (!fpsCounter || !latencyCounter || !memoryCounter) return;
 
-  fpsCounter.textContent = "60";
-  latencyCounter.textContent = `${Math.round(performance.now() % 90)}ms`;
-  memoryCounter.textContent = performance.memory
-    ? `${Math.round(performance.memory.usedJSHeapSize / 1024 / 1024)} MB`
-    : `${state.telemetry.length} modules`;
+  fpsCounter.textContent = data.refresh?.display
+    ? data.refresh.display.replace(" Hz", "")
+    : "--";
+  latencyCounter.textContent = data.latency?.display || "--";
+  memoryCounter.textContent = data.hardware?.deviceMemory
+    ? data.hardware.deviceMemory.replace(" browser estimate", "")
+    : "--";
 }
 
 export function initUI(root) {
@@ -401,12 +744,14 @@ export function initUI(root) {
   updateGridHeader();
   updateSidebar();
   updateOverlay();
+  refreshLiveDashboard();
 
   return {
     renderTelemetryGrid,
     updateSummary,
     updateGridHeader,
     updateSidebar,
-    updateOverlay
+    updateOverlay,
+    refreshLiveDashboard
   };
 }

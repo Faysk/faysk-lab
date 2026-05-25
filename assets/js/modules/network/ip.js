@@ -1,16 +1,19 @@
 import { MODULE_STATUSES } from "../../constants.js";
 
 export function getIpInfo() {
+  const location = window.__fayskLiveDiagnostics?.location;
+
   return {
     id: "network-ip",
     group: "network",
     groupLabel: "Network",
     title: "Public IP",
-    status: MODULE_STATUSES.unsupported,
-    description: "Public IP requires a remote service and is disabled in the static base build.",
+    status: location?.ip && location.ip !== "unavailable" ? MODULE_STATUSES.available : MODULE_STATUSES.permissionRequired,
+    description: "Public IP and approximate location from the first-party Cloudflare endpoint, with external fallback during local development.",
     items: [
-      { label: "Lookup", value: "disabled" },
-      { label: "Backend", value: "not configured" }
+      { label: "IP", value: location?.ip || "measure in progress" },
+      { label: "Location", value: location ? [location.city, location.region, location.country].filter(Boolean).join(", ") || "unavailable" : "measure in progress" },
+      { label: "Provider", value: location?.source || "measure in progress" }
     ]
   };
 }
