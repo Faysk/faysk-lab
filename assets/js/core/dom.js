@@ -20,7 +20,7 @@ export function createElement(tag, options = {}) {
     }
   });
 
-  children.forEach((child) => element.append(child));
+  children.filter(Boolean).forEach((child) => element.append(child));
   return element;
 }
 

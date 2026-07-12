@@ -70,7 +70,7 @@ function getRefreshCandidate(deltas, medianFrameMs) {
   return candidates[0] || null;
 }
 
-function analyzeRefreshDeltas(deltas, timestampDeltas, source) {
+export function analyzeRefreshDeltas(deltas, timestampDeltas, source = "test") {
   const cleaned = deltas.filter((delta) => Number.isFinite(delta) && delta >= 1.8 && delta < 80);
   const cleanedTimestamp = timestampDeltas.filter((delta) => Number.isFinite(delta) && delta >= 1.8 && delta < 80);
 
@@ -214,6 +214,29 @@ export async function getBatterySummary() {
   };
 }
 
+const PASSIVE_PERMISSION_NAMES = ["geolocation", "camera", "microphone", "notifications"];
+
+export async function getPermissionStates() {
+  if (!navigator.permissions?.query) {
+    return { supported: false, states: {} };
+  }
+
+  const entries = await Promise.all(PASSIVE_PERMISSION_NAMES.map(async (name) => {
+    try {
+      const result = await navigator.permissions.query({ name });
+      return [name, result.state || "unknown"];
+    } catch {
+      return [name, "not-queryable"];
+    }
+  }));
+
+  return {
+    supported: true,
+    states: Object.fromEntries(entries),
+    checkedAt: new Date().toISOString()
+  };
+}
+
 async function fetchJson(url, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeout || 4000);
@@ -251,58 +274,56 @@ export async function getClientLocation() {
       org: firstParty.org || "unavailable"
     };
   } catch {
-    try {
-      const fallback = await fetchJson("https://ipapi.co/json/", { timeout: 4500 });
-      return {
-        source: "ipapi.co",
-        ip: fallback.ip || "unavailable",
-        city: fallback.city || "unavailable",
-        region: fallback.region || "unavailable",
-        country: fallback.country_name || fallback.country || "unavailable",
-        colo: "external lookup",
-        timezone: fallback.timezone || "unavailable",
-        asn: fallback.asn || "unavailable",
-        org: fallback.org || fallback.network || "unavailable"
-      };
-    } catch {
-      return {
-        source: "unavailable",
-        ip: "unavailable",
-        city: "unavailable",
-        region: "unavailable",
-        country: "unavailable",
-        colo: "unavailable",
-        timezone: "unavailable",
-        asn: "unavailable",
-        org: "unavailable"
-      };
-    }
+    return {
+      source: "first-party endpoint unavailable",
+      ip: "unavailable",
+      city: "unavailable",
+      region: "unavailable",
+      country: "unavailable",
+      colo: "unavailable",
+      timezone: "unavailable",
+      asn: "unavailable",
+      org: "unavailable"
+    };
   }
 }
 
 export async function measureLatency(samples = 5) {
-  const timings = [];
-
-  for (let index = 0; index < samples; index += 1) {
-    const start = performance.now();
-    try {
-      await fetch(`/assets/js/app.js?latency=${Date.now()}-${index}`, {
-        cache: "no-store",
-        method: "GET"
-      });
-      timings.push(performance.now() - start);
-    } catch {
-      timings.push(NaN);
+  async function sampleEndpoint(urlFactory) {
+    const timings = [];
+    for (let index = 0; index < samples; index += 1) {
+      const start = performance.now();
+      try {
+        const response = await fetch(urlFactory(index), { cache: "no-store", method: "GET" });
+        if (!response.ok) return [];
+        timings.push(performance.now() - start);
+      } catch {
+        return [];
+      }
     }
+    return timings;
+  }
+
+  let source = "Pages Function";
+  let timings = await sampleEndpoint((index) => `/api/ping?latency=${Date.now()}-${index}`);
+  if (!timings.length) {
+    source = "static asset fallback";
+    timings = await sampleEndpoint((index) => `/assets/js/app.js?latency=${Date.now()}-${index}`);
   }
 
   const valid = timings.filter(Number.isFinite);
   const best = valid.length ? Math.min(...valid) : NaN;
   const med = median(valid);
+  const p95 = percentile(valid, 0.95);
+  const jitter = valid.length ? median(valid.map((value) => Math.abs(value - med))) : NaN;
 
   return {
     best,
     median: med,
+    p95,
+    jitter,
+    source,
+    samples: valid.length,
     display: Number.isFinite(best) ? formatLatency(best) : "--"
   };
 }

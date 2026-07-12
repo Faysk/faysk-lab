@@ -1,12 +1,8 @@
-import { CONFIG } from "./config.js";
-import { qs } from "./core/dom.js";
-import { log } from "./core/logger.js";
-import { subscribe } from "./state.js";
-import { initUI } from "./ui/ui.js";
-import { bindTerminal } from "./ui/terminal.js";
-import { initTheme } from "./ui/theme.js";
-import { initParticles } from "./ui/particles.js";
-import { initGlow } from "./ui/glow.js";
+import { qs } from "./core/dom.js?v=0.4.0";
+import { log } from "./core/logger.js?v=0.4.0";
+import { subscribe } from "./state.js?v=0.4.0";
+import { initUI } from "./ui/ui.js?v=0.4.0";
+import { bindTerminal } from "./ui/terminal.js?v=0.4.0";
 
 function boot() {
   const root = qs("#app");
@@ -15,9 +11,6 @@ function boot() {
     throw new Error("App root not found.");
   }
 
-  initTheme(CONFIG.theme);
-  initParticles();
-  initGlow();
   bindTerminal();
 
   const ui = initUI(root);
@@ -27,12 +20,11 @@ function boot() {
     ui.updateSummary();
     ui.updateGridHeader();
     ui.updateSidebar();
-    ui.updateOverlay();
   });
 
   log("Initializing telemetry systems...");
   log("Preparing browser diagnostics...");
-  log("Cyberpunk interface online.");
+  log("Diagnostics interface ready.");
 }
 
 boot();

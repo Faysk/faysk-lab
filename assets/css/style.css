@@ -3,6 +3,23 @@
   color: var(--text);
 }
 
+.skip-link {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  border-radius: 999px;
+  background: var(--mint);
+  color: var(--ink);
+  font-weight: 800;
+  transform: translateY(-180%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

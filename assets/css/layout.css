@@ -50,11 +50,7 @@ input:focus-visible {
 }
 
 #background-grid,
-#background-glow,
-#particles-layer,
-#noise-layer,
-#scanline-overlay,
-#crt-overlay {
+#background-glow {
   pointer-events: none;
   position: fixed;
   inset: 0;
@@ -77,18 +73,11 @@ input:focus-visible {
   animation: softPulse 10s ease-in-out infinite;
 }
 
-#particles-layer,
-#noise-layer,
-#scanline-overlay,
-#crt-overlay {
-  display: none;
-}
-
 .app-shell {
   width: calc(100% - 2rem);
   max-width: var(--container);
   margin: 0 auto;
-  padding: var(--space-5) 0 var(--space-10);
+  padding: var(--space-4) 0 var(--space-10);
 }
 
 .lab-topbar {
@@ -99,7 +88,7 @@ input:focus-visible {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--space-4);
-  min-height: 70px;
+  min-height: 64px;
   padding: var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -134,7 +123,7 @@ input:focus-visible {
 }
 
 .summary-grid,
-#performance-overlay {
+.live-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-4);
@@ -151,7 +140,7 @@ input:focus-visible {
 
 #telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--space-4);
   margin-top: var(--space-4);
 }

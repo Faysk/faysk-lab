@@ -8,10 +8,11 @@ export function getCspInfo() {
     groupLabel: "Security",
     title: "CSP",
     status: hasCspMeta ? MODULE_STATUSES.available : MODULE_STATUSES.unsupported,
-    description: "Content Security Policy presence check.",
+    description: "Restrictive same-origin policy with explicit blocks for plugins, forms, workers and media.",
     items: [
-      { label: "Meta Policy", value: hasCspMeta ? "present" : "not configured" },
-      { label: "Header Policy", value: "not visible to static JS" }
+      { label: "Meta fallback", value: hasCspMeta ? "active" : "not configured" },
+      { label: "Production", value: "Cloudflare header configured" },
+      { label: "Default source", value: "same origin" }
     ]
   };
 }

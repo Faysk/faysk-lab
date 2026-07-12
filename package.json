@@ -1,0 +1,19 @@
+{
+  "name": "faysk-lab",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node scripts/check.mjs && node --test",
+    "test:e2e": "playwright test",
+    "test:e2e:desktop": "playwright test --project=desktop-chromium",
+    "serve": "node scripts/serve.mjs",
+    "verify": "npm run check && npm run test:e2e",
+    "verify:production": "node scripts/verify-production.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1"
+  }
+}

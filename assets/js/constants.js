@@ -1,11 +1,12 @@
 export const APP_NAME = "Faysk Lab";
-export const APP_VERSION = "0.1-alpha";
+export const APP_VERSION = "0.4.0";
 export const BUILD_NAME = "browser-observatory";
 
 export const MODULE_STATUSES = {
   available: "available",
   unsupported: "unsupported",
-  permissionRequired: "permission-required"
+  unavailable: "unavailable",
+  permissionRequired: "action-required"
 };
 
 export const MODULE_GROUPS = [
