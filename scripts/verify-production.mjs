@@ -28,7 +28,7 @@ for (const [header, expectedValues] of Object.entries(expectedHeaders)) {
   }
 }
 
-const assetPaths = [...html.matchAll(/(?:href|src)="(\.\/[^"?#]+)/g)]
+const assetPaths = [...html.matchAll(/(?:href|src|content)="((?:\.\/|https:\/\/lab\.faysk\.dev\/assets\/)[^"?#]+)/g)]
   .map((match) => match[1])
   .filter((path, index, paths) => paths.indexOf(path) === index);
 

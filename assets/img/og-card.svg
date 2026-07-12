@@ -19,7 +19,7 @@
   </g>
   <rect x="76" y="78" width="1048" height="474" rx="34" fill="#101a20" fill-opacity=".74" stroke="#f4f8f4" stroke-opacity=".14"/>
   <text x="112" y="180" fill="#82e8ff" font-family="Consolas, monospace" font-size="32" font-weight="700">browser observatory</text>
-  <text x="112" y="315" fill="#f4f8f4" font-family="Arial, sans-serif" font-size="108" font-weight="800">lab.faysk.dev</text>
+  <text x="112" y="315" fill="#f4f8f4" font-family="Arial, sans-serif" font-size="92" font-weight="800">lab.faysk.dev</text>
   <text x="116" y="386" fill="#a8b6ba" font-family="Arial, sans-serif" font-size="34">privacy-aware diagnostics and passive telemetry</text>
   <g transform="translate(882 176)">
     <rect width="164" height="164" rx="36" fill="#070a0d" stroke="#82e8ff" stroke-opacity=".34" stroke-width="3"/>

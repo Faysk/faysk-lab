@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node --test",
     "check": "node scripts/check.mjs && node --test",
+    "build:og": "node scripts/render-og.mjs",
     "test:e2e": "playwright test",
     "test:e2e:desktop": "playwright test --project=desktop-chromium",
     "serve": "node scripts/serve.mjs",

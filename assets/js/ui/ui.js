@@ -495,7 +495,7 @@ function renderWorkbench() {
   });
 
   bindSearch(searchInput);
-  return createElement("details", {
+  const disclosure = createElement("details", {
     className: "catalog-disclosure",
     attrs: { id: "signals" },
     children: [
@@ -517,6 +517,14 @@ function renderWorkbench() {
       })
     ]
   });
+
+  disclosure.addEventListener("toggle", () => {
+    if (!disclosure.open || disclosure.dataset.mounted === "true") return;
+    disclosure.dataset.mounted = "true";
+    renderTelemetryGrid();
+  });
+
+  return disclosure;
 }
 
 function renderFooter() {
@@ -839,6 +847,9 @@ function filterTelemetry() {
 }
 
 function renderTelemetryGrid() {
+  const catalog = qs("#signals");
+  if (catalog?.dataset.mounted !== "true") return;
+
   const grid = qs("#telemetry-grid");
   if (!grid) return;
 
@@ -913,7 +924,6 @@ export function initUI(root) {
   root.append(renderShell());
 
   setState({ telemetry: collectTelemetry() });
-  renderTelemetryGrid();
   updateSummary();
   updateGridHeader();
   updateSidebar();

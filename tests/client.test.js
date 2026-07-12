@@ -36,8 +36,6 @@ test("client function returns first-party Cloudflare metadata without caching", 
     colo: "LHR",
     timezone: "Europe/London",
     asn: 64500,
-    org: "Example Network",
-    latitude: null,
-    longitude: null
+    org: "Example Network"
   });
 });

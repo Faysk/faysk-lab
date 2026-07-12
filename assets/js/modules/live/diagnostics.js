@@ -62,9 +62,9 @@ function getRefreshCandidate(deltas, medianFrameMs) {
         && candidate.expectedFrameMs <= medianFrameMs + frameTolerance(candidate.expectedFrameMs);
     })
     .sort((a, b) => {
-      if (b.rate !== a.rate) return b.rate - a.rate;
+      if (a.error !== b.error) return a.error - b.error;
       if (b.support !== a.support) return b.support - a.support;
-      return a.error - b.error;
+      return Math.abs(a.expectedFrameMs - medianFrameMs) - Math.abs(b.expectedFrameMs - medianFrameMs);
     });
 
   return candidates[0] || null;

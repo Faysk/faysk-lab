@@ -12,10 +12,12 @@ test("runs a passive scan and filters the complete catalog", async ({ page }) =>
 
   await page.goto("/");
   await expect(page.locator("#scan-status")).toContainText("no permission prompts", { timeout: 12_000 });
-  await expect(page.locator(".telemetry-card")).toHaveCount(35);
-  await expect(page.locator(".card-guidance a")).toHaveCount(35);
+  await expect(page.locator(".telemetry-card")).toHaveCount(0);
+  expect(await page.locator("*").count()).toBeLessThan(500);
 
   await page.locator("#signals summary").click();
+  await expect(page.locator(".telemetry-card")).toHaveCount(35);
+  await expect(page.locator(".card-guidance a")).toHaveCount(35);
   await page.locator("#search-input").fill("webgpu");
   await expect(page.locator(".telemetry-card")).toHaveCount(1);
   await expect(page.locator(".telemetry-card h3")).toHaveText("Graphics APIs");
@@ -42,6 +44,11 @@ test("exposes a safe, coherent document structure", async ({ page }) => {
   await expect(page.locator("main")).toHaveCount(1);
   await expect(page.locator("nav[aria-label]")).toHaveCount(2);
   await expect(page.locator('meta[http-equiv="Content-Security-Policy"]')).toHaveCount(1);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /og-card\.png$/);
   await expect(page.locator("#report-dialog")).toHaveAttribute("aria-labelledby", "report-dialog-title");
   await expect(page.locator("footer")).toContainText("0.4.0");
+
+  const socialImage = await page.request.get("/assets/img/og-card.png");
+  expect(socialImage.status()).toBe(200);
+  expect(socialImage.headers()["content-type"]).toBe("image/png");
 });

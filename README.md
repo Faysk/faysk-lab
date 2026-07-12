@@ -89,6 +89,8 @@ npm run verify
 
 `npm test` executa os testes nativos. `npm run check` também valida sintaxe, imports, assets, headers e invariantes de privacidade. `npm run test:e2e` cobre scan, catálogo, filtros, responsividade e acessibilidade com axe. `npm run verify` executa toda a suíte usada no GitHub Actions.
 
+O preview social usa `assets/img/og-card.svg` como fonte editável. Depois de alterá-lo, regenere o PNG publicado com `npm run build:og`.
+
 ## Estados da interface
 
 - `ready`: o sinal foi coletado ou a API está utilizável no contexto atual;

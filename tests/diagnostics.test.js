@@ -13,6 +13,18 @@ test("recognizes a stable 60 Hz cadence", () => {
   assert.ok(result.jitter < 0.1);
 });
 
+for (const expectedHz of [120, 144, 165, 240, 280]) {
+  test(`does not overestimate a stable ${expectedHz} Hz cadence`, () => {
+    const frameMs = 1000 / expectedHz;
+    const samples = Array.from({ length: 180 }, (_, index) => frameMs + (index % 5 - 2) * 0.01);
+    const result = analyzeRefreshDeltas(samples, samples, "unit-test");
+
+    assert.equal(result.roundedHz, expectedHz);
+    assert.equal(result.display, `${expectedHz} Hz`);
+    assert.equal(result.confidence, "measured");
+  });
+}
+
 test("returns a safe empty result when no frames are available", () => {
   const result = analyzeRefreshDeltas([], [], "unit-test");
 

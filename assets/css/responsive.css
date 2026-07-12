@@ -41,8 +41,8 @@
     position: relative;
     top: 0;
     border-radius: var(--radius-md);
-    width: calc(100% - 1rem);
-    max-width: calc(100% - 1rem);
+    width: 100%;
+    max-width: 100%;
   }
 
   .topbar-actions,
