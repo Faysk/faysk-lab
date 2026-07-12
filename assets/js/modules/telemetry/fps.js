@@ -11,19 +11,21 @@ export function getFpsInfo() {
   const frameMs = Number.isFinite(live?.frameMs) ? `${live.frameMs.toFixed(2)} ms` : "measure in progress";
   const renderCadence = live?.renderDisplay || "measure in progress";
   const support = live?.supportDisplay || "measure in progress";
+  const range = live?.rangeDisplay || "measure in progress";
 
   return {
     id: "telemetry-fps",
     group: "telemetry",
     groupLabel: "Telemetry",
-    title: "Refresh Rate",
+    title: "Observed Cadence",
     status: MODULE_STATUSES.available,
-    description: "Display refresh estimated from requestAnimationFrame timing.",
+    description: "Animation cadence observed in this tab. It is not a fixed claim about the monitor's native refresh rate.",
     items: [
-      { label: "Measured", value: measured },
+      { label: "Observed", value: measured },
       { label: "Frame Time", value: frameMs },
       { label: "Render Cadence", value: renderCadence },
-      { label: "Support", value: support },
+      { label: "Range", value: range },
+      { label: "Stability", value: support },
       { label: "Method", value: "iframe rAF probe" }
     ]
   };

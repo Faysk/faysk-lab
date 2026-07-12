@@ -22,7 +22,7 @@ export const MODULE_GUIDANCE = {
   "geo-locale": { href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale", note: "Locale describes formatting preferences, not nationality or location." },
   "media-devices": { href: "https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices", note: "Camera and microphone are not opened or enumerated." },
   "telemetry-performance": { href: "https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming", note: "Timing reflects this navigation and can differ after cache or prerendering." },
-  "telemetry-fps": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame", note: "Refresh is inferred from animation frames and can be affected by tab visibility or load." },
+  "telemetry-fps": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame", note: "Cadence is observed from animation frames without assuming a preset monitor rate; VRR, tab visibility and load can change it." },
   "telemetry-timing": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Performance/now", note: "Timer precision may be reduced to limit timing attacks and fingerprinting." },
   "telemetry-sensors": { href: "https://developer.mozilla.org/en-US/docs/Web/API/DeviceMotionEvent", note: "Sensor objects can exist even when access requires permission or secure context." },
   "security-cookies": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled", note: "This capability flag does not inspect or create cookies." },

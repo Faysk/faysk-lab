@@ -346,7 +346,7 @@ function renderMethodology() {
     {
       label: "Estimated",
       title: "Browser-reported, not hardware truth",
-      copy: "Memory, logical threads, connection and refresh can be rounded, limited or affected by the current tab."
+      copy: "Memory, logical threads, connection and observed cadence can be rounded, limited or affected by the current tab."
     },
     {
       label: "First-party",
@@ -405,7 +405,7 @@ function renderLiveDashboard() {
       createElement("div", {
         className: "live-grid",
         children: [
-          createLiveCard("refresh", "Display refresh", "measuring...", "requestAnimationFrame timing"),
+          createLiveCard("refresh", "Observed cadence", "measuring...", "requestAnimationFrame timing"),
           createLiveCard("network", "Network", "measuring...", "IP, route and latency"),
           createLiveCard("hardware", "Hardware", "reading...", "browser-exposed device hints"),
           createLiveCard("gpu", "Graphics", "reading...", "WebGL renderer information"),
@@ -623,7 +623,7 @@ function updateRefreshCard(refresh) {
       : "rAF paused";
   const detail = hasMeasurement
     ? `${refresh.samples || 0} frame samples, ${refresh.confidence || "measured"}`
-    : "No animation frames received. Keep the tab visible to measure refresh rate.";
+    : "No animation frames received. Keep the tab visible to measure the current cadence.";
   const visual = qs(".scope-visual");
 
   if (!hasMeasurement && visual) {
@@ -636,7 +636,8 @@ function updateRefreshCard(refresh) {
     pairs: [
       { label: "Frame time", value: Number.isFinite(refresh.frameMs) ? `${refresh.frameMs.toFixed(2)} ms` : "--" },
       { label: "Render cadence", value: refresh.renderDisplay || "--" },
-      { label: "Support", value: refresh.supportDisplay || "--" },
+      { label: "Observed range", value: refresh.rangeDisplay || "--" },
+      { label: "Stability", value: refresh.supportDisplay || "--" },
       { label: "Jitter", value: Number.isFinite(refresh.jitter) ? `${refresh.jitter.toFixed(2)} ms` : "--" }
     ]
   });
@@ -746,9 +747,9 @@ async function runLiveDashboard({ updateModules = true, trigger = "automatic", s
         const data = mergeLiveDiagnostics({ refresh });
         updateRefreshCard(refresh);
         if (Number.isFinite(refresh.roundedHz || refresh.hz)) {
-          log(`Display refresh measured at ${refresh.display} via ${refresh.source}.`, "info");
+          log(`Observed animation cadence measured at ${refresh.display} via ${refresh.source}.`, "info");
         } else {
-          log(`Display refresh measurement did not receive animation frames (${refresh.confidence}).`, "info");
+          log(`Cadence measurement did not receive animation frames (${refresh.confidence}).`, "info");
         }
         return data;
       })

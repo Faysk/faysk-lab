@@ -9,7 +9,7 @@ Laboratório de diagnóstico do navegador, com coleta passiva e transparência s
 
 O lab mostra o que uma página pode inferir ou consultar a partir do navegador atual:
 
-- tela, viewport, densidade e refresh estimado;
+- tela, viewport, densidade e cadência observada sem presets de Hz;
 - navegador, idioma, timezone e plataforma;
 - CPU lógica e memória aproximada expostas pelo browser;
 - WebGL/GPU, storage e bateria quando disponíveis;
@@ -103,7 +103,7 @@ O preview social usa `assets/img/og-card.svg` como fonte editável. Depois de al
 - `navigator.deviceMemory` é uma estimativa arredondada e limitada pelo navegador.
 - `navigator.hardwareConcurrency` pode reportar menos processadores lógicos que o sistema possui.
 - Network Information API tem suporte limitado e seus números são estimativas.
-- O refresh é inferido com `requestAnimationFrame`; abas ocultas e carga da página afetam a leitura.
+- A cadência é observada com `requestAnimationFrame`, sem assumir taxas fixas; VRR, abas ocultas e carga da página afetam a leitura.
 - Storage quota não representa a capacidade física do disco.
 - IP geolocation é aproximada e pode refletir VPN, proxy ou saída corporativa.
 

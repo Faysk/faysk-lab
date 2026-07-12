@@ -1,8 +1,6 @@
 import { formatBytes, formatLatency } from "../../core/utils.js";
 import { readWebGlInfo } from "../gpu/webgl.js";
 
-const COMMON_REFRESH_RATES = [24, 30, 48, 50, 60, 72, 75, 90, 100, 120, 144, 165, 180, 200, 240, 280, 300, 360, 480];
-
 function median(values) {
   if (!values.length) return NaN;
   const sorted = [...values].sort((a, b) => a - b);
@@ -17,57 +15,43 @@ function percentile(values, ratio) {
   return sorted[index];
 }
 
-function nearestCommonRate(value) {
-  if (!Number.isFinite(value)) return null;
-  return COMMON_REFRESH_RATES.reduce((nearest, rate) => {
-    return Math.abs(rate - value) < Math.abs(nearest - value) ? rate : nearest;
-  }, COMMON_REFRESH_RATES[0]);
+function roundHz(value) {
+  return Number.isFinite(value) ? Math.round(value * 10) / 10 : null;
 }
 
 function formatHz(value) {
-  return Number.isFinite(value) ? `${Math.round(value)} Hz` : "--";
+  const rounded = roundHz(value);
+  return rounded === null ? "--" : `${rounded} Hz`;
 }
 
-function frameTolerance(frameMs) {
-  return Math.max(0.35, frameMs * 0.18);
-}
+function clusterFrameDeltas(values) {
+  const clusters = [];
 
-function getRefreshCandidate(deltas, medianFrameMs) {
-  if (!deltas.length) return null;
+  [...values].sort((a, b) => a - b).forEach((value) => {
+    let closest = null;
+    let closestDistance = Infinity;
 
-  const minimumHits = Math.max(12, Math.ceil(deltas.length * 0.1));
-  const candidates = COMMON_REFRESH_RATES
-    .map((rate) => {
-      const expectedFrameMs = 1000 / rate;
-      const tolerance = frameTolerance(expectedFrameMs);
-      const closeDeltas = deltas.filter((delta) => Math.abs(delta - expectedFrameMs) <= tolerance);
-      const support = closeDeltas.length / deltas.length;
-      const closeMedian = median(closeDeltas);
-      const error = Number.isFinite(closeMedian)
-        ? Math.abs(closeMedian - expectedFrameMs) / expectedFrameMs
-        : Infinity;
-
-      return {
-        rate,
-        expectedFrameMs,
-        measuredFrameMs: closeMedian,
-        hits: closeDeltas.length,
-        support,
-        error
-      };
-    })
-    .filter((candidate) => {
-      return candidate.hits >= minimumHits
-        && candidate.error <= 0.18
-        && candidate.expectedFrameMs <= medianFrameMs + frameTolerance(candidate.expectedFrameMs);
-    })
-    .sort((a, b) => {
-      if (a.error !== b.error) return a.error - b.error;
-      if (b.support !== a.support) return b.support - a.support;
-      return Math.abs(a.expectedFrameMs - medianFrameMs) - Math.abs(b.expectedFrameMs - medianFrameMs);
+    clusters.forEach((cluster) => {
+      const distance = Math.abs(value - cluster.center);
+      const tolerance = Math.max(0.12, cluster.center * 0.045);
+      if (distance <= tolerance && distance < closestDistance) {
+        closest = cluster;
+        closestDistance = distance;
+      }
     });
 
-  return candidates[0] || null;
+    if (closest) {
+      closest.values.push(value);
+      closest.center = median(closest.values);
+    } else {
+      clusters.push({ center: value, values: [value] });
+    }
+  });
+
+  return clusters.sort((a, b) => {
+    if (b.values.length !== a.values.length) return b.values.length - a.values.length;
+    return a.center - b.center;
+  });
 }
 
 export function analyzeRefreshDeltas(deltas, timestampDeltas, source = "test") {
@@ -92,41 +76,52 @@ export function analyzeRefreshDeltas(deltas, timestampDeltas, source = "test") {
 
   const medianFrameMs = median(cleaned);
   const fastFrameMs = percentile(cleaned, 0.1);
-  const candidate = getRefreshCandidate(cleaned, medianFrameMs);
+  const dominantCluster = clusterFrameDeltas(cleaned)[0];
+  const dominantFrameMs = median(dominantCluster?.values || cleaned);
   const rawHz = Number.isFinite(medianFrameMs) && medianFrameMs > 0 ? 1000 / medianFrameMs : NaN;
-  const renderHz = nearestCommonRate(rawHz);
-  const selectedHz = candidate?.rate || nearestCommonRate(Number.isFinite(fastFrameMs) ? 1000 / fastFrameMs : rawHz) || rawHz;
-  const selectedFrameMs = candidate?.measuredFrameMs || (Number.isFinite(selectedHz) ? 1000 / selectedHz : medianFrameMs);
-  const matchingDeltas = candidate
-    ? cleaned.filter((delta) => Math.abs(delta - candidate.expectedFrameMs) <= frameTolerance(candidate.expectedFrameMs))
-    : cleaned;
-  const jitter = matchingDeltas.length
-    ? median(matchingDeltas.map((delta) => Math.abs(delta - median(matchingDeltas))))
+  const observedHz = Number.isFinite(dominantFrameMs) && dominantFrameMs > 0 ? 1000 / dominantFrameMs : rawHz;
+  const support = dominantCluster ? dominantCluster.values.length / cleaned.length : 1;
+  const stableWindow = cleaned.filter((delta) => {
+    return delta >= dominantFrameMs * 0.65 && delta <= dominantFrameMs * 1.55;
+  });
+  const lowerFrameMs = percentile(stableWindow, 0.1);
+  const upperFrameMs = percentile(stableWindow, 0.9);
+  const spread = Number.isFinite(lowerFrameMs) && Number.isFinite(upperFrameMs)
+    ? (upperFrameMs - lowerFrameMs) / dominantFrameMs
+    : 0;
+  const confidence = support >= 0.55 && spread <= 0.08
+    ? "measured"
+    : spread <= 0.24
+      ? "variable"
+      : "unstable";
+  const jitter = dominantCluster?.values.length
+    ? median(dominantCluster.values.map((delta) => Math.abs(delta - dominantFrameMs)))
     : NaN;
   const timestampMedian = median(cleanedTimestamp);
-  const cadenceDiffers = Number.isFinite(renderHz) && Number.isFinite(selectedHz) && Math.abs(renderHz - selectedHz) >= 20;
+  const minimumHz = Number.isFinite(upperFrameMs) && upperFrameMs > 0 ? 1000 / upperFrameMs : NaN;
+  const maximumHz = Number.isFinite(lowerFrameMs) && lowerFrameMs > 0 ? 1000 / lowerFrameMs : NaN;
 
   return {
-    hz: selectedHz,
-    roundedHz: nearestCommonRate(selectedHz),
-    frameMs: selectedFrameMs,
+    hz: observedHz,
+    roundedHz: roundHz(observedHz),
+    frameMs: dominantFrameMs,
     medianFrameMs,
     fastFrameMs,
-    renderHz,
+    renderHz: rawHz,
     rawHz,
     jitter,
     timestampFrameMs: timestampMedian,
-    confidence: candidate
-      ? cadenceDiffers
-        ? "display-ceiling"
-        : "measured"
-      : "measured",
+    confidence,
     source,
     samples: cleaned.length,
-    support: candidate?.support || 1,
-    supportDisplay: candidate ? `${Math.round(candidate.support * 100)}%` : "median",
-    renderDisplay: formatHz(renderHz),
-    display: formatHz(nearestCommonRate(selectedHz) || selectedHz)
+    support,
+    supportDisplay: `${Math.round(support * 100)}% stable cluster`,
+    range: { minimumHz, maximumHz },
+    rangeDisplay: Number.isFinite(minimumHz) && Number.isFinite(maximumHz)
+      ? `${formatHz(minimumHz)}–${formatHz(maximumHz)}`
+      : "--",
+    renderDisplay: formatHz(rawHz),
+    display: formatHz(observedHz)
   };
 }
 
