@@ -1,4 +1,4 @@
-import { setState } from "../state.js";
+import { setState } from "../state.js?v=0.4.0";
 
 export function bindSearch(input) {
   input.addEventListener("input", () => {

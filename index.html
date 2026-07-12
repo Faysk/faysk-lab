@@ -1,43 +1,56 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Privacy-aware browser diagnostics lab by Faysk." />
   <meta name="theme-color" content="#070a0d" />
+  <meta name="color-scheme" content="dark" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; manifest-src 'self'; frame-src 'self'; object-src 'none'; media-src 'none'; worker-src 'none'; base-uri 'self'; form-action 'none'" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta property="og:title" content="lab.faysk.dev" />
   <meta property="og:description" content="A privacy-aware browser diagnostics experiment." />
-  <meta property="og:image" content="https://lab.faysk.dev/assets/img/og-card.svg" />
+  <meta property="og:image" content="https://lab.faysk.dev/assets/img/og-card.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Faysk Lab browser observatory preview" />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://lab.faysk.dev/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://lab.faysk.dev/assets/img/og-card.png" />
+  <meta name="twitter:image:alt" content="Faysk Lab browser observatory preview" />
 
   <title>lab.faysk.dev</title>
 
   <link rel="icon" href="./assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="./site.webmanifest" />
+  <link rel="canonical" href="https://lab.faysk.dev/" />
 
-  <link rel="stylesheet" href="./assets/css/variables.css" />
-  <link rel="stylesheet" href="./assets/css/animations.css" />
-  <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css" />
-  <link rel="stylesheet" href="./assets/css/terminal.css" />
-  <link rel="stylesheet" href="./assets/css/responsive.css" />
-  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/variables.css?v=0.4.0" />
+  <link rel="stylesheet" href="./assets/css/animations.css?v=0.4.0" />
+  <link rel="stylesheet" href="./assets/css/layout.css?v=0.4.0" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=0.4.0" />
+  <link rel="stylesheet" href="./assets/css/terminal.css?v=0.4.0" />
+  <link rel="stylesheet" href="./assets/css/responsive.css?v=0.4.0" />
+  <link rel="stylesheet" href="./assets/css/style.css?v=0.4.0" />
 
-  <link rel="modulepreload" href="./assets/js/app.js" />
+  <link rel="modulepreload" href="./assets/js/app.js?v=0.4.0" />
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to diagnostics</a>
   <div id="background-grid"></div>
   <div id="background-glow"></div>
-  <div id="particles-layer"></div>
-  <div id="noise-layer"></div>
+
+  <noscript>
+    <main class="noscript-panel">
+      <strong>JavaScript is required for this diagnostic.</strong>
+      <p>Faysk Lab runs browser capability checks locally in this page. Enable JavaScript to start the passive scan.</p>
+    </main>
+  </noscript>
 
   <div id="app"></div>
-  <div id="modal-root"></div>
-  <div id="notifications-root"></div>
-  <div id="scanline-overlay"></div>
-  <div id="crt-overlay"></div>
 
-  <script type="module" src="./assets/js/app.js"></script>
+  <script type="module" src="./assets/js/app.js?v=0.4.0"></script>
 </body>
 </html>

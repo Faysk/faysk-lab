@@ -1,0 +1,41 @@
+export const MODULE_GUIDANCE = {
+  "browser-info": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Navigator", note: "Values can be reduced or standardized by privacy-focused browsers." },
+  "browser-languages": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages", note: "Language order is user-configurable and may differ from physical location." },
+  "browser-permissions": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API", note: "Not every permission is queryable in every browser; querying never grants access." },
+  "system-screen": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Screen", note: "CSS pixels, zoom and multi-monitor placement can affect these values." },
+  "system-hardware": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency", note: "Logical threads and memory are browser hints, not authoritative specifications." },
+  "system-memory": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory", note: "JavaScript heap metrics are non-standard and Chromium-oriented." },
+  "system-battery": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API", note: "Battery information is intentionally unavailable in several browsers." },
+  "system-storage": { href: "https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate", note: "Quota describes browser storage allocation, never physical disk capacity." },
+  "system-touch": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Navigator/maxTouchPoints", note: "Touch support does not prove the device is primarily touch-driven." },
+  "gpu-runtime": { href: "https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API", note: "WebGL renderer strings may be masked or translated; WebGPU is checked without requesting an adapter." },
+  "gpu-canvas": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API", note: "This lab checks support only and does not generate a canvas fingerprint." },
+  "fingerprint-summary": { href: "https://developer.mozilla.org/en-US/docs/Web/Privacy/Guides/Mitigating_browser_fingerprinting", note: "No uniqueness score or persistent fingerprint is generated." },
+  "fingerprint-audio": { href: "https://developer.mozilla.org/en-US/docs/Web/API/AudioContext", note: "Audio support is checked without running an oscillator fingerprint." },
+  "fingerprint-fonts": { href: "https://developer.mozilla.org/en-US/docs/Web/API/FontFaceSet", note: "The Font Loading API is detected; installed fonts are not enumerated." },
+  "network-connection": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Network_Information_API", note: "Connection type, RTT and downlink are estimates with limited browser support." },
+  "network-ip": { href: "https://developers.cloudflare.com/workers/runtime-apis/request/#incomingrequestcfproperties", note: "IP region is approximate and can reflect a VPN, proxy or corporate exit." },
+  "network-webrtc": { href: "https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API", note: "Support is checked without gathering ICE candidates or probing local addresses." },
+  "network-latency": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Performance_API/High_precision_timing", note: "HTTP timing includes browser, loopback/CDN and server overhead; it is not ICMP ping." },
+  "geo-geolocation": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API", note: "Only support and permission state are read; precise location is never requested." },
+  "geo-timezone": { href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat", note: "Timezone is an operating-system preference and can be overridden." },
+  "geo-locale": { href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale", note: "Locale describes formatting preferences, not nationality or location." },
+  "media-devices": { href: "https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices", note: "Camera and microphone are not opened or enumerated." },
+  "telemetry-performance": { href: "https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming", note: "Timing reflects this navigation and can differ after cache or prerendering." },
+  "telemetry-fps": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame", note: "Cadence is observed from animation frames without assuming a preset monitor rate; VRR, tab visibility and load can change it." },
+  "telemetry-timing": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Performance/now", note: "Timer precision may be reduced to limit timing attacks and fingerprinting." },
+  "telemetry-sensors": { href: "https://developer.mozilla.org/en-US/docs/Web/API/DeviceMotionEvent", note: "Sensor objects can exist even when access requires permission or secure context." },
+  "security-cookies": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled", note: "This capability flag does not inspect or create cookies." },
+  "security-web-storage": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API", note: "Availability is checked without reading any stored keys or values." },
+  "security-https": { href: "https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts", note: "Localhost can be trustworthy even when its URL uses HTTP." },
+  "security-csp": { href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP", note: "Production applies a header policy; the document also includes a restrictive meta fallback." },
+  "experimental-bluetooth": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API", note: "Experimental and secure-context only; no device chooser is opened." },
+  "experimental-usb": { href: "https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API", note: "Experimental and permission-gated; no connected device is queried." },
+  "experimental-serial": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API", note: "Experimental and permission-gated; no port chooser is opened." },
+  "experimental-gamepad": { href: "https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API", note: "Support does not imply a controller is connected or actively polled." },
+  "experimental-vr": { href: "https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API", note: "XR support varies by hardware and browser; no immersive session is requested." }
+};
+
+export function getModuleGuidance(moduleId) {
+  return MODULE_GUIDANCE[moduleId] || null;
+}

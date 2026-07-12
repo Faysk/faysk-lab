@@ -13,9 +13,7 @@ export async function onRequest({ request }) {
     colo: cf.colo || null,
     timezone: cf.timezone || null,
     asn: cf.asn || null,
-    org: cf.asOrganization || null,
-    latitude: cf.latitude || null,
-    longitude: cf.longitude || null
+    org: cf.asOrganization || null
   }, {
     headers: {
       "Cache-Control": "no-store",

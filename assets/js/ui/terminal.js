@@ -1,18 +1,24 @@
-import { CONFIG } from "../config.js";
-import { createElement, qs } from "../core/dom.js";
-import { onLog } from "../core/logger.js";
+import { CONFIG } from "../config.js?v=0.4.0";
+import { createElement, qs } from "../core/dom.js?v=0.4.0";
+import { onLog } from "../core/logger.js?v=0.4.0";
 
 export function renderTerminal() {
-  return createElement("section", {
+  return createElement("details", {
     attrs: { id: "live-terminal" },
     children: [
+      createElement("summary", {
+        className: "terminal-summary",
+        children: [
+          createElement("span", { className: "terminal-title", text: "Diagnostic log" }),
+          createElement("span", { className: "terminal-summary-hint", text: "Local events only" })
+        ]
+      }),
       createElement("div", {
         className: "terminal-header",
         children: [
           createElement("div", {
             children: [
-              createElement("div", { className: "terminal-title", text: "LIVE TELEMETRY TERMINAL" }),
-              createElement("div", { className: "terminal-subtitle", text: "safe diagnostics stream" })
+              createElement("div", { className: "terminal-subtitle", text: "Passive measurements and interface events" })
             ]
           }),
           createElement("div", {
@@ -29,7 +35,7 @@ export function renderTerminal() {
         className: "terminal-toolbar",
         children: [
           createElement("span", { text: "channel: local" }),
-          createElement("span", { text: "permissions: passive" }),
+          createElement("span", { text: "prompts: disabled" }),
           createElement("span", { text: "mode: observer" })
         ]
       }),

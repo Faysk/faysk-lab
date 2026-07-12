@@ -7,12 +7,14 @@ export function getGpuInfo() {
     id: "gpu-runtime",
     group: "gpu",
     groupLabel: "GPU",
-    title: "WebGL GPU",
+    title: "Graphics APIs",
     status: info.supported ? MODULE_STATUSES.available : MODULE_STATUSES.unsupported,
     description: "Graphics runtime diagnostics.",
     items: [
+      { label: "WebGL", value: info.supported ? "available" : "unsupported" },
       { label: "Vendor", value: info.vendor },
-      { label: "Renderer", value: info.renderer }
+      { label: "Renderer", value: info.renderer },
+      { label: "WebGPU", value: "gpu" in navigator ? "supported" : "unsupported" }
     ]
   };
 }

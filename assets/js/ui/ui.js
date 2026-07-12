@@ -1,8 +1,8 @@
-import { APP_NAME, APP_VERSION, BUILD_NAME, MODULE_GROUPS } from "../constants.js";
-import { createElement, qs, clear } from "../core/dom.js";
-import { log } from "../core/logger.js";
-import { getState, setState } from "../state.js";
-import { collectTelemetry } from "../modules/index.js";
+import { APP_NAME, APP_VERSION, BUILD_NAME, MODULE_GROUPS } from "../constants.js?v=0.4.0";
+import { createElement, qs, clear } from "../core/dom.js?v=0.4.0";
+import { log } from "../core/logger.js?v=0.4.0";
+import { getState, setState } from "../state.js?v=0.4.0";
+import { collectTelemetry } from "../modules/index.js?v=0.4.0";
 import {
   getBatterySummary,
   getBrowserSummary,
@@ -10,17 +10,62 @@ import {
   getConnectionInfo,
   getGpuSummary,
   getHardwareSummary,
+  getPermissionStates,
   getScreenSummary,
   getStorageSummary,
   measureLatency,
   measureRefreshRate
-} from "../modules/live/diagnostics.js";
-import { createEmptyState, createTelemetryCard } from "./cards.js";
-import { renderSidebar } from "./sidebar.js";
-import { renderTerminal } from "./terminal.js";
-import { bindSearch } from "./search.js";
+} from "../modules/live/diagnostics.js?v=0.4.0";
+import { copyText, serializeSafeReport } from "../core/report.js?v=0.4.0";
+import { createEmptyState, createTelemetryCard } from "./cards.js?v=0.4.0";
+import { renderSidebar } from "./sidebar.js?v=0.4.0";
+import { renderTerminal } from "./terminal.js?v=0.4.0";
+import { bindSearch } from "./search.js?v=0.4.0";
 
 let liveScanPromise = null;
+
+function setScanStatus(message, state = "idle") {
+  const status = qs("#scan-status");
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.state = state;
+}
+
+function setScanControl(isScanning) {
+  const button = qs("#scan-button");
+  if (!button) return;
+  button.disabled = isScanning;
+  button.textContent = isScanning ? "Scanning…" : "Run passive scan";
+  button.setAttribute("aria-busy", isScanning ? "true" : "false");
+}
+
+function formatDuration(durationMs) {
+  if (!Number.isFinite(durationMs)) return "--";
+  return durationMs < 1000 ? `${durationMs}ms` : `${(durationMs / 1000).toFixed(1)}s`;
+}
+
+function formatClock(isoTimestamp) {
+  return new Date(isoTimestamp).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+function showReportFallback(report) {
+  const dialog = qs("#report-dialog");
+  const output = qs("#report-output");
+  if (!dialog || !output) return;
+
+  output.value = report;
+  if (typeof dialog.showModal === "function") {
+    dialog.showModal();
+  } else {
+    dialog.setAttribute("open", "");
+  }
+  output.focus();
+  output.select();
+}
 
 function getTelemetryStats(telemetry) {
   return telemetry.reduce((stats, module) => {
@@ -31,7 +76,8 @@ function getTelemetryStats(telemetry) {
     total: 0,
     available: 0,
     unsupported: 0,
-    "permission-required": 0
+    unavailable: 0,
+    "action-required": 0
   });
 }
 
@@ -74,6 +120,12 @@ function createBrand() {
 }
 
 function renderTopbar() {
+  const detailsLink = createElement("a", { text: "Details", attrs: { href: "#signals" } });
+  detailsLink.addEventListener("click", () => {
+    const catalog = qs("#signals");
+    if (catalog) catalog.open = true;
+  });
+
   return createElement("header", {
     className: "lab-topbar",
     children: [
@@ -83,15 +135,13 @@ function renderTopbar() {
         attrs: { "aria-label": "Lab navigation" },
         children: [
           createElement("a", { text: "Overview", attrs: { href: "#overview" } }),
-          createElement("a", { text: "Signals", attrs: { href: "#signals" } }),
-          createElement("a", { text: "Terminal", attrs: { href: "#live-terminal" } }),
-          createElement("a", { text: "Hub", attrs: { href: "https://faysk.dev", target: "_blank", rel: "noreferrer" } })
+          createElement("a", { text: "Snapshot", attrs: { href: "#live-overview" } }),
+          detailsLink
         ]
       }),
       createElement("div", {
         className: "topbar-actions",
         children: [
-          createElement("span", { className: "signal-pill", text: "safe mode" }),
           createLink("Back to hub", "https://faysk.dev", "button")
         ]
       })
@@ -142,25 +192,52 @@ function renderHero() {
     text: "Open terminal"
   });
 
+  const reportButton = createElement("button", {
+    className: "secondary-button report-button",
+    attrs: { id: "report-button", type: "button" },
+    text: "Copy safe report"
+  });
+
   scanButton.addEventListener("click", async () => {
     if (scanButton.disabled) return;
 
-    scanButton.disabled = true;
     const nextCount = getState().scanCount + 1;
     setState({ scanCount: nextCount });
     log(`Passive scan ${nextCount} started without permission prompts.`, "info");
 
-    try {
-      await refreshLiveDashboard();
-      log(`Passive scan ${nextCount} updated live and advanced signals.`, "info");
-    } finally {
-      scanButton.disabled = false;
-    }
+    await refreshLiveDashboard({ trigger: "manual", scanNumber: nextCount });
+    log(`Passive scan ${nextCount} updated live and advanced signals.`, "info");
   });
 
   terminalButton.addEventListener("click", () => {
-    qs("#live-terminal")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    log("Terminal focused.", "info");
+    const terminal = qs("#live-terminal");
+    if (terminal) terminal.open = true;
+    terminal?.scrollIntoView({ behavior: "smooth", block: "center" });
+    log("Diagnostic log opened.", "info");
+  });
+
+  reportButton.addEventListener("click", async () => {
+    if (reportButton.disabled) return;
+    reportButton.disabled = true;
+    reportButton.textContent = "Copying…";
+
+    const report = serializeSafeReport({
+      live: window.__fayskLiveDiagnostics || {},
+      telemetry: getState().telemetry
+    });
+
+    try {
+      await copyText(report);
+      setScanStatus("Safe report copied — IP, location, user agent and GPU renderer excluded.", "success");
+      log("Sanitized support report copied to clipboard.", "info");
+    } catch {
+      showReportFallback(report);
+      setScanStatus("Clipboard unavailable — the safe report is open for manual copy.", "idle");
+      log("Clipboard unavailable; sanitized report opened for manual copy.", "warn");
+    } finally {
+      reportButton.disabled = false;
+      reportButton.textContent = "Copy safe report";
+    }
   });
 
   return createElement("section", {
@@ -173,23 +250,27 @@ function renderHero() {
           createElement("div", { className: "eyebrow", text: "Privacy-aware browser lab" }),
           createElement("h1", {
             className: "hero-title",
-            html: "Browser signals,<span>collected safely.</span>"
+            html: "See what your browser<span>reveals.</span>"
           }),
           createElement("p", {
             className: "hero-description",
-            text: "A clean diagnostics surface for browser capabilities, runtime details and passive telemetry. No camera, microphone, geolocation, USB or Bluetooth prompts run automatically."
+            text: "A transparent snapshot of browser capabilities and runtime signals. No camera, microphone, precise location or device prompts. No persistent fingerprint."
           }),
           createElement("div", {
             className: "hero-actions",
-            children: [scanButton, terminalButton]
+            children: [scanButton, reportButton, terminalButton]
+          }),
+          createElement("p", {
+            className: "scan-status",
+            attrs: { id: "scan-status", role: "status", "aria-live": "polite" },
+            text: "Starting a passive scan in this tab…"
           }),
           createElement("div", {
             className: "signal-row",
             children: [
-              createSignalPill("local runtime"),
-              createSignalPill("no invasive prompts"),
-              createSignalPill("static deploy"),
-              createSignalPill("ES modules")
+              createSignalPill("passive by default"),
+              createSignalPill("first-party network data"),
+              createSignalPill("no stored profile")
             ]
           })
         ]
@@ -207,9 +288,99 @@ function renderHero() {
           }),
           createElement("p", {
             className: "scope-copy",
-            text: "This lab is a showcase experiment: useful for understanding a browser environment, intentionally conservative about sensitive APIs."
+            text: "Values are browser-reported estimates, not authoritative hardware specifications. Open the details only when you need the raw signals."
           })
         ]
+      })
+    ]
+  });
+}
+
+function renderReportDialog() {
+  const closeButton = createElement("button", {
+    className: "secondary-button",
+    attrs: { type: "button" },
+    text: "Close report"
+  });
+
+  closeButton.addEventListener("click", () => {
+    const dialog = qs("#report-dialog");
+    if (typeof dialog?.close === "function") dialog.close();
+    else dialog?.removeAttribute("open");
+  });
+
+  return createElement("dialog", {
+    className: "report-dialog",
+    attrs: { id: "report-dialog", "aria-labelledby": "report-dialog-title" },
+    children: [
+      createElement("div", {
+        className: "report-dialog-header",
+        children: [
+          createElement("div", {
+            children: [
+              createElement("span", { className: "eyebrow", text: "Sanitized export" }),
+              createElement("h2", { attrs: { id: "report-dialog-title" }, text: "Safe support report" })
+            ]
+          }),
+          closeButton
+        ]
+      }),
+      createElement("p", {
+        className: "report-dialog-copy",
+        text: "IP, location, user agent and the exact GPU renderer are excluded. Select the text below to copy it manually."
+      }),
+      createElement("textarea", {
+        attrs: {
+          id: "report-output",
+          readonly: "",
+          rows: "18",
+          "aria-label": "Sanitized support report"
+        }
+      })
+    ]
+  });
+}
+
+function renderMethodology() {
+  const notes = [
+    {
+      label: "Estimated",
+      title: "Browser-reported, not hardware truth",
+      copy: "Memory, logical threads, connection and observed cadence can be rounded, limited or affected by the current tab."
+    },
+    {
+      label: "First-party",
+      title: "Network identity stays on this site",
+      copy: "IP and approximate region come only from the Cloudflare request serving the lab. Local development shows them as unavailable."
+    },
+    {
+      label: "Gated",
+      title: "Sensitive APIs remain closed",
+      copy: "Permission states may be read, but camera, microphone, precise location and device choosers are never opened automatically."
+    }
+  ];
+
+  return createElement("section", {
+    className: "methodology-section",
+    attrs: { "aria-labelledby": "methodology-title" },
+    children: [
+      createElement("div", {
+        className: "methodology-heading",
+        children: [
+          createElement("span", { className: "eyebrow", text: "Method" }),
+          createElement("h2", { attrs: { id: "methodology-title" }, text: "How to read these results" })
+        ]
+      }),
+      createElement("div", {
+        className: "methodology-grid",
+        children: notes.map((note) => createElement("article", {
+          className: "methodology-card",
+          children: [
+            createElement("span", { className: "methodology-label", text: note.label }),
+            createElement("h3", { text: note.title }),
+            createElement("p", { text: note.copy })
+          ]
+        }))
       })
     ]
   });
@@ -227,14 +398,14 @@ function renderLiveDashboard() {
           createElement("h2", { className: "section-title", text: "What this browser can actually report." }),
           createElement("p", {
             className: "section-copy",
-            text: "These values are measured from browser APIs, Cloudflare request metadata and live timing loops. Some hardware details are intentionally approximate because browsers protect that information."
+            text: "A quick snapshot from browser APIs, first-party Cloudflare request metadata and timing loops. Approximate or unavailable values are labeled as such."
           })
         ]
       }),
       createElement("div", {
         className: "live-grid",
         children: [
-          createLiveCard("refresh", "Display refresh", "measuring...", "requestAnimationFrame timing"),
+          createLiveCard("refresh", "Observed cadence", "measuring...", "requestAnimationFrame timing"),
           createLiveCard("network", "Network", "measuring...", "IP, route and latency"),
           createLiveCard("hardware", "Hardware", "reading...", "browser-exposed device hints"),
           createLiveCard("gpu", "Graphics", "reading...", "WebGL renderer information"),
@@ -260,27 +431,6 @@ function renderModuleSummary() {
   return createElement("section", {
     className: "summary-grid",
     attrs: { id: "module-summary", "aria-live": "polite" }
-  });
-}
-
-function createOverlayCard(label, value, id) {
-  return createElement("div", {
-    className: "overlay-card",
-    children: [
-      createElement("div", { className: "overlay-title", text: label }),
-      createElement("div", { attrs: { id }, text: value })
-    ]
-  });
-}
-
-function renderOverlay() {
-  return createElement("section", {
-    attrs: { id: "performance-overlay", "aria-label": "Runtime overlay" },
-    children: [
-      createOverlayCard("Refresh", "--", "fps-counter"),
-      createOverlayCard("Latency", "--", "latency-counter"),
-      createOverlayCard("RAM hint", "--", "memory-counter")
-    ]
   });
 }
 
@@ -317,7 +467,7 @@ function renderWorkbench() {
       createElement("h2", { className: "sidebar-heading", text: "Browse modules" }),
       createElement("p", {
         className: "sidebar-description",
-        text: "Filter by category or search values currently visible in the passive diagnostics grid."
+        text: "Filter by category or search the values collected in this page."
       }),
       searchInput,
       sidebarNav
@@ -327,7 +477,7 @@ function renderWorkbench() {
   const grid = createElement("section", { attrs: { id: "telemetry-grid", "aria-live": "polite" } });
   const panel = createElement("section", {
     className: "grid-panel",
-    attrs: { id: "signals" },
+    attrs: { id: "signal-grid-panel" },
     children: [
       createElement("div", {
         className: "advanced-heading",
@@ -335,7 +485,7 @@ function renderWorkbench() {
           createElement("span", { className: "eyebrow", text: "Advanced" }),
           createElement("p", {
             className: "section-copy",
-            text: "Detailed browser capability modules. These include availability checks, privacy-gated APIs and browser-specific signals."
+            text: "Raw capability checks and browser-reported values. Gated modules are never opened automatically."
           })
         ]
       }),
@@ -345,10 +495,36 @@ function renderWorkbench() {
   });
 
   bindSearch(searchInput);
-  return createElement("section", {
-    className: "lab-workbench",
-    children: [sidebar, panel]
+  const disclosure = createElement("details", {
+    className: "catalog-disclosure",
+    attrs: { id: "signals" },
+    children: [
+      createElement("summary", {
+        className: "catalog-summary",
+        children: [
+          createElement("span", {
+            children: [
+              createElement("span", { className: "eyebrow", text: "Deep dive" }),
+              createElement("strong", { attrs: { id: "catalog-count" }, text: "Explore detailed signals" })
+            ]
+          }),
+          createElement("span", { className: "catalog-summary-copy", text: "Search and filter the raw capability matrix" })
+        ]
+      }),
+      createElement("section", {
+        className: "lab-workbench",
+        children: [sidebar, panel]
+      })
+    ]
   });
+
+  disclosure.addEventListener("toggle", () => {
+    if (!disclosure.open || disclosure.dataset.mounted === "true") return;
+    disclosure.dataset.mounted = "true";
+    renderTelemetryGrid();
+  });
+
+  return disclosure;
 }
 
 function renderFooter() {
@@ -382,12 +558,18 @@ function renderShell() {
     className: "app-shell",
     children: [
       renderTopbar(),
-      renderHero(),
-      renderLiveDashboard(),
-      renderModuleSummary(),
-      renderOverlay(),
-      renderWorkbench(),
-      renderTerminal(),
+      createElement("main", {
+        attrs: { id: "main-content" },
+        children: [
+          renderHero(),
+          renderLiveDashboard(),
+          renderModuleSummary(),
+          renderMethodology(),
+          renderWorkbench(),
+          renderTerminal(),
+          renderReportDialog()
+        ]
+      }),
       renderFooter()
     ]
   });
@@ -441,7 +623,7 @@ function updateRefreshCard(refresh) {
       : "rAF paused";
   const detail = hasMeasurement
     ? `${refresh.samples || 0} frame samples, ${refresh.confidence || "measured"}`
-    : "No animation frames received. Keep the tab visible to measure refresh rate.";
+    : "No animation frames received. Keep the tab visible to measure the current cadence.";
   const visual = qs(".scope-visual");
 
   if (!hasMeasurement && visual) {
@@ -454,7 +636,8 @@ function updateRefreshCard(refresh) {
     pairs: [
       { label: "Frame time", value: Number.isFinite(refresh.frameMs) ? `${refresh.frameMs.toFixed(2)} ms` : "--" },
       { label: "Render cadence", value: refresh.renderDisplay || "--" },
-      { label: "Support", value: refresh.supportDisplay || "--" },
+      { label: "Observed range", value: refresh.rangeDisplay || "--" },
+      { label: "Stability", value: refresh.supportDisplay || "--" },
       { label: "Jitter", value: Number.isFinite(refresh.jitter) ? `${refresh.jitter.toFixed(2)} ms` : "--" }
     ]
   });
@@ -536,7 +719,10 @@ function refreshTelemetryFromLive() {
   updateSidebar();
 }
 
-async function runLiveDashboard({ updateModules = true } = {}) {
+async function runLiveDashboard({ updateModules = true, trigger = "automatic", scanNumber = 0 } = {}) {
+  const startedAt = Date.now();
+  setScanControl(true);
+  setScanStatus(trigger === "manual" ? `Running passive scan ${scanNumber}…` : "Running the initial passive scan…", "scanning");
   log("Measuring live browser signals...", "info");
 
   setLiveCard("refresh", { value: "measuring...", detail: "requestAnimationFrame timing", pairs: [] });
@@ -554,18 +740,16 @@ async function runLiveDashboard({ updateModules = true } = {}) {
   updateHardwareCard(initialData);
   updateGpuCard(initialData);
   updateScreenCard(initialData);
-  updateOverlay();
 
   const tasks = [
     measureRefreshRate({ timeout: 6200 })
       .then((refresh) => {
         const data = mergeLiveDiagnostics({ refresh });
         updateRefreshCard(refresh);
-        updateOverlay();
         if (Number.isFinite(refresh.roundedHz || refresh.hz)) {
-          log(`Display refresh measured at ${refresh.display} via ${refresh.source}.`, "info");
+          log(`Observed animation cadence measured at ${refresh.display} via ${refresh.source}.`, "info");
         } else {
-          log(`Display refresh measurement did not receive animation frames (${refresh.confidence}).`, "info");
+          log(`Cadence measurement did not receive animation frames (${refresh.confidence}).`, "info");
         }
         return data;
       })
@@ -580,7 +764,6 @@ async function runLiveDashboard({ updateModules = true } = {}) {
       .then((latency) => {
         const data = mergeLiveDiagnostics({ latency });
         updateNetworkCard(data);
-        updateOverlay();
         return data;
       })
       .catch((error) => {
@@ -615,6 +798,12 @@ async function runLiveDashboard({ updateModules = true } = {}) {
         const data = mergeLiveDiagnostics({ battery: { status: "unsupported", level: "unsupported" } });
         updateHardwareCard(data);
       })
+    ,
+    getPermissionStates()
+      .then((permissions) => {
+        mergeLiveDiagnostics({ permissions });
+        return permissions;
+      })
   ];
 
   await Promise.allSettled(tasks);
@@ -623,7 +812,12 @@ async function runLiveDashboard({ updateModules = true } = {}) {
     refreshTelemetryFromLive();
   }
 
-  const data = window.__fayskLiveDiagnostics || {};
+  const durationMs = Date.now() - startedAt;
+  const completedAt = new Date().toISOString();
+  const data = mergeLiveDiagnostics({
+    scan: { trigger, scanNumber, durationMs, completedAt }
+  });
+  setScanStatus(`Updated ${formatClock(completedAt)} in ${formatDuration(durationMs)} — no permission prompts.`, "success");
   log(`Live scan complete: ${data.refresh?.display || "--"}, ${data.latency?.display || "--"} latency.`, "info");
   return data;
 }
@@ -632,9 +826,11 @@ async function refreshLiveDashboard(options = {}) {
   if (!liveScanPromise) {
     liveScanPromise = runLiveDashboard(options)
       .catch((error) => {
+        setScanStatus("The scan stopped early; available values were kept.", "error");
         log(`Live diagnostics failed safely: ${error.message}`, "error");
       })
       .finally(() => {
+        setScanControl(false);
         liveScanPromise = null;
       });
   }
@@ -652,6 +848,9 @@ function filterTelemetry() {
 }
 
 function renderTelemetryGrid() {
+  const catalog = qs("#signals");
+  if (catalog?.dataset.mounted !== "true") return;
+
   const grid = qs("#telemetry-grid");
   if (!grid) return;
 
@@ -671,13 +870,15 @@ function updateSummary() {
   if (!summary) return;
 
   const stats = getTelemetryStats(getState().telemetry);
+  const catalogCount = qs("#catalog-count");
   clear(summary);
   summary.append(
     createSummaryCard("Signals", stats.total, "total"),
-    createSummaryCard("Available", stats.available, "available"),
-    createSummaryCard("Permission gated", stats["permission-required"], "permission"),
-    createSummaryCard("Unsupported", stats.unsupported, "unsupported")
+    createSummaryCard("Ready", stats.available, "available"),
+    createSummaryCard("Gated by design", stats["action-required"], "permission"),
+    createSummaryCard("Unavailable", stats.unsupported + stats.unavailable, "unsupported")
   );
+  if (catalogCount) catalogCount.textContent = `${stats.total} detailed signals`;
 }
 
 function updateGridHeader() {
@@ -719,41 +920,21 @@ function updateSidebar() {
   }));
 }
 
-function updateOverlay() {
-  const data = window.__fayskLiveDiagnostics || {};
-  const fpsCounter = qs("#fps-counter");
-  const latencyCounter = qs("#latency-counter");
-  const memoryCounter = qs("#memory-counter");
-
-  if (!fpsCounter || !latencyCounter || !memoryCounter) return;
-
-  fpsCounter.textContent = data.refresh?.display
-    ? data.refresh.display.replace(" Hz", "")
-    : "--";
-  latencyCounter.textContent = data.latency?.display || "--";
-  memoryCounter.textContent = data.hardware?.deviceMemory
-    ? data.hardware.deviceMemory.replace(" browser estimate", "")
-    : "--";
-}
-
 export function initUI(root) {
   clear(root);
   root.append(renderShell());
 
   setState({ telemetry: collectTelemetry() });
-  renderTelemetryGrid();
   updateSummary();
   updateGridHeader();
   updateSidebar();
-  updateOverlay();
-  refreshLiveDashboard();
+  refreshLiveDashboard({ trigger: "automatic" });
 
   return {
     renderTelemetryGrid,
     updateSummary,
     updateGridHeader,
     updateSidebar,
-    updateOverlay,
     refreshLiveDashboard
   };
 }

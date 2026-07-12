@@ -9,11 +9,13 @@ export function getLatencyInfo() {
     groupLabel: "Network",
     title: "Latency",
     status: MODULE_STATUSES.available,
-    description: "Best-of-sample fetch latency to a same-origin static asset.",
+    description: "Same-origin HTTP latency, preferring a no-store Cloudflare Pages Function.",
     items: [
       { label: "Best", value: latency?.display || "measure in progress" },
       { label: "Median", value: Number.isFinite(latency?.median) ? `${Math.round(latency.median)}ms` : "measure in progress" },
-      { label: "Method", value: "fetch timing" }
+      { label: "p95", value: Number.isFinite(latency?.p95) ? `${Math.round(latency.p95)}ms` : "measure in progress" },
+      { label: "Jitter", value: Number.isFinite(latency?.jitter) ? `${latency.jitter.toFixed(1)}ms` : "measure in progress" },
+      { label: "Target", value: latency?.source || "measure in progress" }
     ]
   };
 }

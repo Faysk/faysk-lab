@@ -1,4 +1,12 @@
 import { createElement } from "../core/dom.js";
+import { getModuleGuidance } from "../modules/guidance.js?v=0.4.0";
+
+const STATUS_LABELS = {
+  available: "ready",
+  "action-required": "gated",
+  unavailable: "unavailable",
+  unsupported: "unsupported"
+};
 
 function createValueRows(items) {
   return items.map((item) => createElement("div", {
@@ -11,14 +19,16 @@ function createValueRows(items) {
 }
 
 export function createTelemetryCard(module) {
-  const statusClass = module.status === "permission-required" ? "permission-required" : module.status;
+  const statusClass = module.status;
+  const statusLabel = STATUS_LABELS[module.status] || module.status;
+  const guidance = getModuleGuidance(module.id);
 
   return createElement("article", {
     className: `telemetry-card is-revealed status-${statusClass}`,
     attrs: {
       "data-group": module.group,
       "data-title": module.title.toLowerCase(),
-      "aria-label": `${module.title} telemetry card, status ${module.status}`
+      "aria-label": `${module.title} telemetry card, status ${statusLabel}`
     },
     children: [
       createElement("div", {
@@ -32,7 +42,7 @@ export function createTelemetryCard(module) {
           }),
           createElement("span", {
             className: `status-badge ${statusClass}`,
-            text: module.status
+            text: statusLabel
           })
         ]
       }),
@@ -41,6 +51,16 @@ export function createTelemetryCard(module) {
         className: "card-value-grid",
         children: createValueRows(module.items)
       }),
+      guidance ? createElement("div", {
+        className: "card-guidance",
+        children: [
+          createElement("span", { text: guidance.note }),
+          createElement("a", {
+            text: "Reference ↗",
+            attrs: { href: guidance.href, target: "_blank", rel: "noreferrer" }
+          })
+        ]
+      }) : null,
       createElement("div", {
         className: "card-scanline",
         attrs: { "aria-hidden": "true" }

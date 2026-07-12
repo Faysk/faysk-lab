@@ -1,16 +1,20 @@
-import { MODULE_STATUSES } from "../../constants.js";
+import { MODULE_STATUSES } from "../../constants.js?v=0.4.0";
 
 export function getMediaDevicesInfo() {
+  const states = window.__fayskLiveDiagnostics?.permissions?.states || {};
+
   return {
     id: "media-devices",
     group: "media",
     groupLabel: "Media",
-    title: "Media Devices",
+    title: "Media Capture",
     status: navigator.mediaDevices ? MODULE_STATUSES.permissionRequired : MODULE_STATUSES.unsupported,
-    description: "Support check only; camera and microphone are not requested.",
+    description: "Camera and microphone capability check. No device is opened or enumerated.",
     items: [
-      { label: "mediaDevices", value: navigator.mediaDevices ? "available" : "unsupported" },
-      { label: "Enumeration", value: "disabled until explicit action" }
+      { label: "API", value: navigator.mediaDevices ? "supported" : "unsupported" },
+      { label: "Camera", value: states.camera || "checking" },
+      { label: "Microphone", value: states.microphone || "checking" },
+      { label: "Collection", value: "never automatic" }
     ]
   };
 }

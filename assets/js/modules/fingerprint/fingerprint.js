@@ -1,16 +1,17 @@
-import { MODULE_STATUSES } from "../../constants.js";
+import { MODULE_STATUSES } from "../../constants.js?v=0.4.0";
 
 export function getFingerprintInfo() {
   return {
     id: "fingerprint-summary",
     group: "fingerprint",
     groupLabel: "Fingerprint",
-    title: "Fingerprint Summary",
+    title: "Privacy Surface",
     status: MODULE_STATUSES.available,
-    description: "Non-invasive fingerprinting overview.",
+    description: "Explains the passive signals this page can expose without creating a persistent identifier.",
     items: [
-      { label: "Mode", value: "safe summary" },
-      { label: "Entropy", value: "estimated only" }
+      { label: "Identifier", value: "not generated" },
+      { label: "Persistence", value: "none" },
+      { label: "Collection", value: "current page only" }
     ]
   };
 }

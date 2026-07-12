@@ -1,16 +1,20 @@
-import { MODULE_STATUSES } from "../../constants.js";
+import { MODULE_STATUSES } from "../../constants.js?v=0.4.0";
 
 export function getLocalStorageInfo() {
+  const local = "localStorage" in window;
+  const session = "sessionStorage" in window;
+
   return {
-    id: "security-local-storage",
+    id: "security-web-storage",
     group: "security",
     groupLabel: "Security",
-    title: "localStorage",
-    status: "localStorage" in window ? MODULE_STATUSES.available : MODULE_STATUSES.unsupported,
-    description: "Storage API availability.",
+    title: "Web Storage",
+    status: local || session ? MODULE_STATUSES.available : MODULE_STATUSES.unsupported,
+    description: "Availability only. Stored values are never inspected.",
     items: [
-      { label: "API", value: "localStorage" in window ? "available" : "unsupported" },
-      { label: "Content Scan", value: "disabled" }
+      { label: "localStorage", value: local ? "available" : "unsupported" },
+      { label: "sessionStorage", value: session ? "available" : "unsupported" },
+      { label: "Content scan", value: "never" }
     ]
   };
 }

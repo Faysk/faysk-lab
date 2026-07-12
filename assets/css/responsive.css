@@ -21,9 +21,12 @@
   }
 
   .summary-grid,
-  #performance-overlay,
   .live-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .methodology-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -38,8 +41,8 @@
     position: relative;
     top: 0;
     border-radius: var(--radius-md);
-    width: calc(100vw - 1rem);
-    max-width: calc(100vw - 1rem);
+    width: 100%;
+    max-width: 100%;
   }
 
   .topbar-actions,
@@ -58,7 +61,6 @@
   }
 
   .summary-grid,
-  #performance-overlay,
   .live-grid,
   #telemetry-grid {
     grid-template-columns: 1fr;
@@ -69,7 +71,6 @@
   .live-card,
   .summary-card,
   .telemetry-card,
-  .overlay-card,
   .sidebar-panel,
   .grid-panel,
   #live-terminal {
@@ -86,8 +87,8 @@
   .sidebar-description,
   .footer-description {
     overflow-wrap: anywhere;
-    width: min(100%, 320px);
-    max-width: 320px;
+    width: 100%;
+    max-width: none;
   }
 
   .live-pair {
@@ -98,7 +99,7 @@
   .hero-title,
   .hero-actions,
   .signal-row {
-    max-width: 330px;
+    max-width: 100%;
   }
 
   .card-row {
@@ -112,6 +113,45 @@
   }
 
   .hero-title {
-    font-size: clamp(2.8rem, 15vw, 4.4rem);
+    font-size: clamp(2.7rem, 14vw, 4.2rem);
+  }
+
+  .lab-nav {
+    display: none;
+  }
+
+  .terminal-summary-hint {
+    display: none;
+  }
+
+  .methodology-section {
+    padding: var(--space-4);
+  }
+
+  .methodology-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .report-dialog-header {
+    flex-direction: column;
+  }
+
+  .report-dialog-header .secondary-button {
+    width: 100%;
+  }
+
+  .catalog-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .catalog-summary-copy {
+    text-align: left;
+  }
+
+  .catalog-summary::after {
+    position: absolute;
+    right: var(--space-5);
   }
 }

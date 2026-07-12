@@ -3,6 +3,40 @@
   color: var(--text);
 }
 
+.skip-link {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  border-radius: 999px;
+  background: var(--mint);
+  color: var(--ink);
+  font-weight: 800;
+  transform: translateY(-180%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.noscript-panel {
+  width: min(680px, calc(100% - 2rem));
+  margin: 15vh auto 0;
+  padding: var(--space-6);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+
+.noscript-panel p {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
