@@ -4,8 +4,8 @@
 Usage (from a trusted CI workflow with Issues: write):
     GITHUB_TOKEN=... GITHUB_REPOSITORY=Faysk/faysk-lab python3 scripts/provision_milestones.py
 
-No due dates are assigned. Only issues #3..#32 receive milestones.
-Tracking issues #33..#41 remain outside native milestones to avoid double counting.
+No due dates are assigned. All 40 open issues (#2..#41) receive milestones.
+Tracker issues #33..#41 share their release milestones; epic #2 uses M99 (cross-release governance).
 """
 from __future__ import annotations
 
@@ -80,11 +80,20 @@ MILESTONES = (
         "purpose": "Proposta condicional de conta, vários PCs e relay Cloudflare outbound seguro.",
         "gate": "GO de produto, privacidade/RGPD, custos, isolamento de contas e revogação.",
     },
+    {
+        "id": "M99", "title": "M99 — Faysk Lab Program & Governance",
+        "tracker": None, "issues": [2],
+        "purpose": "Epic transversal #2: governança, visão do produto, dependências e integração entre os releases M00–M08.",
+        "gate": "Epic encerrada somente após avaliação consolidada dos milestones aprovados; M08 permanece opcional se formalmente descartado.",
+    },
 )
 
-numbers = [n for item in MILESTONES for n in item["issues"]]
-if sorted(numbers) != list(range(3, 33)) or len(numbers) != len(set(numbers)):
-    sys.exit("Invalid milestone mapping: every issue #3..#32 must appear exactly once.")
+def associated_issues(item):
+    return item["issues"] + ([item["tracker"]] if item["tracker"] is not None else [])
+
+numbers = [n for item in MILESTONES for n in associated_issues(item)]
+if sorted(numbers) != list(range(2, 42)) or len(numbers) != len(set(numbers)):
+    sys.exit("Invalid milestone mapping: every open issue #2..#41 must appear exactly once.")
 
 
 def api(method: str, path: str, payload: dict | None = None):
@@ -162,7 +171,7 @@ def main():
             created += 1
             print(f"CREATE {m['title']} milestone #{item['number']}", flush=True)
         number = item["number"]
-        for issue_number in m["issues"]:
+        for issue_number in associated_issues(m):
             issue = api("GET", f"/repos/{REPOSITORY}/issues/{issue_number}")
             old = issue.get("milestone")
             if old and old["number"] == number:
@@ -182,11 +191,11 @@ def main():
             print(f"ASSIGN issue #{issue_number} -> {m['title']}", flush=True)
         summary_lines.append(
             f"| {m['id']} | [#{number}](https://github.com/{REPOSITORY}/milestone/{number}) "
-            f"| {', '.join('#'+str(n) for n in m['issues'])} |"
+            f"| {', '.join('#'+str(n) for n in associated_issues(m))} |"
         )
-    if assigned != 30:
-        raise RuntimeError(f"Only {assigned}/30 issue assignments checked")
-    print(f"SUCCESS: {created} newly created milestones, {len(MILESTONES)} active, {assigned}/30 issue links")
+    if assigned != 40:
+        raise RuntimeError(f"Only {assigned}/40 issue assignments checked")
+    print(f"SUCCESS: {created} newly created milestones, {len(MILESTONES)} active, {assigned}/40 issue links")
     path = os.environ.get("GITHUB_STEP_SUMMARY")
     if path:
         with open(path, "a", encoding="utf-8") as f:
