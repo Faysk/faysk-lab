@@ -112,6 +112,7 @@ O preview social usa `assets/img/og-card.svg` como fonte editável. Depois de al
 - [Revisão de produto](docs/review.md)
 - [Arquitetura e módulos](docs/modules.md)
 - [Roadmap](docs/roadmap.md)
+- [Plano de entregas e milestones Web + agente](docs/delivery-milestones.md)
 - [Ideias avaliadas](docs/ideas.md)
 - [Deploy e verificação](docs/deployment.md)
 
