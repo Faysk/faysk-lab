@@ -160,7 +160,7 @@ def main():
             description = (
                 f"Objetivo: {m['purpose']}\n"
                 f"Gate GO/NO-GO: {m['gate']}\n"
-                f"Detalhes/checklist: https://github.com/{REPOSITORY}/issues/{m['tracker']}\n"
+                f"Detalhes/checklist: https://github.com/{REPOSITORY}/issues/{m['tracker'] or 2}\n"
                 f"Plano: https://github.com/{REPOSITORY}/blob/main/docs/delivery-milestones.md\n"
                 "Sem data de vencimento até aprovação de capacidade."
             )
