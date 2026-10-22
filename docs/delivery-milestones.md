@@ -5,7 +5,7 @@
 **Epic:** [#2](https://github.com/Faysk/faysk-lab/issues/2) · **Referência técnica:** [ResetExplode v0.16](https://github.com/GustavoReset/ResetExplode)  
 **Baseline técnica verificada:** faysk-lab v0.4.0, HTML/CSS/JS vanilla, ES Modules, Cloudflare Pages/Functions, Node tests, Playwright/axe, CSP e Permissions-Policy restritivas.
 
-> **Atenção — estado GitHub:** as entradas M00–M08 são **issues rastreadoras** (tracking issues). Não são objetos nativos de *GitHub Milestones*, porque a integração conectada não expõe a criação desses objetos. A matriz abaixo permite convertê-las em milestones nativos e atribuir as issues sem redefinir escopo. Nenhuma issue foi marcada como concluída, e nenhuma data de entrega foi fixada sem capacidade/agenda.
+> **Estado GitHub (22/10/2026):** os nove **GitHub Milestones nativos M00–M08 estão criados**, com as **30 issues técnicas #3–#32 atribuídas e verificadas**. Os rastreadores #33–#41 permanecem como checklists de artefatos e gates de release, separados dos milestones para não distorcer as barras nativas. Nenhuma issue foi marcada como concluída e não foram impostas datas de vencimento.
 
 ## 1. Visão do produto e limites
 O Lab começa com um diagnóstico de **navegador passivo e sem instalação**. As capacidades futuras são aditivas, isoladas e explicitamente autorizadas:
@@ -29,17 +29,17 @@ Não converter `navigator.deviceMemory` em RAM exata, `storage.estimate()` em ca
 
 ## 3. Quadro executivo de entregas
 
-| Marco | Entrega / versão alvo | Issues responsáveis | Esforço indicativo | Gate principal | Rastreio |
+| Marco | Entrega / versão alvo | Issues responsáveis | Esforço indicativo | Gate principal | Milestone nativo / gate |
 |---|---|---|---|---|---|
-| **M00** | Architecture Gate | #3, #4, #5, #6, #7 | 6–12 dias | ADR, threat model, schema e desenho aprovados | [#33](https://github.com/Faysk/faysk-lab/issues/33) |
-| **M01** | v0.5.0 — Web Utility | #10, #11, #12, #13 | 8–16 dias | Diagnósticos sem instalação + exports seguros | [#34](https://github.com/Faysk/faysk-lab/issues/34) |
-| **M02** | v0.6.0 — Web Labs | #8, #9, #14 | 10–20 dias | Benchmarks e Makers opt-in e canceláveis | [#35](https://github.com/Faysk/faysk-lab/issues/35) |
-| **M03** | v0.7.0-alpha — Agent Trust | #15, #16, #20, #21 | 16–30 dias | PoC agente read-only, origem, pairing e revogação | [#36](https://github.com/Faysk/faysk-lab/issues/36) |
-| **M04** | v0.8.0-beta — Hardware Monitor | #17, #18, #19, #22, #23, #24 | 24–45 dias | Sensores, dashboards e distribuição beta segura | [#37](https://github.com/Faysk/faysk-lab/issues/37) |
-| **M05** | v1.0.0 — Stable | #31, #32 | 10–22 dias | Quality gates, suporte, integridade, rollback | [#38](https://github.com/Faysk/faysk-lab/issues/38) |
-| **M06** | v1.1.0 — Performance & Games | #25, #26, #27 | 18–35 dias | Benchmark native seguro, FPS e overlay local | [#39](https://github.com/Faysk/faysk-lab/issues/39) |
-| **M07** | v1.2.0 — Local Operations | #28, #30 | 15–35 dias | Alertas opt-in; helper de ações reversíveis | [#40](https://github.com/Faysk/faysk-lab/issues/40) |
-| **M08** | v2.0.0-proposal — Remote Multi-PC | #29 | 20–45 dias, **condicional** | ADR SaaS, isolamento, LGPD/RGPD, custos | [#41](https://github.com/Faysk/faysk-lab/issues/41) |
+| **M00** | Architecture Gate | #3, #4, #5, #6, #7 | 6–12 dias | ADR, threat model, schema e desenho aprovados | [M00](https://github.com/Faysk/faysk-lab/milestone/1) · [#33](https://github.com/Faysk/faysk-lab/issues/33) |
+| **M01** | v0.5.0 — Web Utility | #10, #11, #12, #13 | 8–16 dias | Diagnósticos sem instalação + exports seguros | [M01](https://github.com/Faysk/faysk-lab/milestone/2) · [#34](https://github.com/Faysk/faysk-lab/issues/34) |
+| **M02** | v0.6.0 — Web Labs | #8, #9, #14 | 10–20 dias | Benchmarks e Makers opt-in e canceláveis | [M02](https://github.com/Faysk/faysk-lab/milestone/3) · [#35](https://github.com/Faysk/faysk-lab/issues/35) |
+| **M03** | v0.7.0-alpha — Agent Trust | #15, #16, #20, #21 | 16–30 dias | PoC agente read-only, origem, pairing e revogação | [M03](https://github.com/Faysk/faysk-lab/milestone/4) · [#36](https://github.com/Faysk/faysk-lab/issues/36) |
+| **M04** | v0.8.0-beta — Hardware Monitor | #17, #18, #19, #22, #23, #24 | 24–45 dias | Sensores, dashboards e distribuição beta segura | [M04](https://github.com/Faysk/faysk-lab/milestone/5) · [#37](https://github.com/Faysk/faysk-lab/issues/37) |
+| **M05** | v1.0.0 — Stable | #31, #32 | 10–22 dias | Quality gates, suporte, integridade, rollback | [M05](https://github.com/Faysk/faysk-lab/milestone/6) · [#38](https://github.com/Faysk/faysk-lab/issues/38) |
+| **M06** | v1.1.0 — Performance & Games | #25, #26, #27 | 18–35 dias | Benchmark native seguro, FPS e overlay local | [M06](https://github.com/Faysk/faysk-lab/milestone/7) · [#39](https://github.com/Faysk/faysk-lab/issues/39) |
+| **M07** | v1.2.0 — Local Operations | #28, #30 | 15–35 dias | Alertas opt-in; helper de ações reversíveis | [M07](https://github.com/Faysk/faysk-lab/milestone/8) · [#40](https://github.com/Faysk/faysk-lab/issues/40) |
+| **M08** | v2.0.0-proposal — Remote Multi-PC | #29 | 20–45 dias, **condicional** | ADR SaaS, isolamento, LGPD/RGPD, custos | [M08](https://github.com/Faysk/faysk-lab/milestone/9) · [#41](https://github.com/Faysk/faysk-lab/issues/41) |
 
 **Esforço agregado estimado até a GA M05:** **74–145 dias de engenharia** antes de contingência; reestimar após spikes e não converter diretamente em data pública. Os marcos M06/M07/M08 são opcionais para a primeira GA, e M08 depende de aprovação de produto independente.
 
@@ -168,18 +168,27 @@ M00 architecture + threat model (BLOQUEANTE)
 ## 10. Workflow Git e governança de backlog
 - Branches: `feat/fhl-XX-descricao`, `fix/fhl-XX-...`, `docs/milestones-...`.
 - PR deve mencionar a issue (`Closes #N` apenas se realmente satisfizer seus critérios), rodar qualidade, conter resumo e screenshots relevantes.
-- Em cada issue filha, registrar `**Milestone planejado: Mxx — #rastreio**`; usar a mesma nomenclatura na epic.
+- Cada issue filha #3–#32 tem **milestone nativo Mxx atribuído** e um link ao rastreador #33–#41; manter ambas as relações sincronizadas.
 - A issue rastreadora Mxx usa checkbox de cada issue filha, checks de artefatos e GO/NO-GO; fechar apenas quando a versão for validada.
 - Manter `main` implantável; preview da Pages por PR e releases de agente por tags; versão nativa web/agente/schema documentada.
 - Controle de mudanças: tarefa nova só entra num marco se uma existente sair, o esforço for reestimado ou a nova necessidade for bloqueante de segurança.
 
-## 11. Conversão para GitHub Milestones nativos
-Quando houver acesso a criação de milestone pelo UI/GitHub REST autenticado:
-1. **Issues → Milestones → New milestone**; criar M00–M08 com os mesmos nomes, títulos/descrições das rastreadoras #33–#41. Sem `due date` até capacidade/agenda aprovadas.
-2. Atribuir cada issue #3–#32 ao Mxx listado no quadro (cada uma recebe apenas um milestone nativo).
-3. Manter #33–#41 como *release gates* (ou fechá-las como substituídas, depois de links/campos transferidos; nunca duplicar contagem de progresso).
-4. Atualizar #2 e este documento com links aos milestones nativos e revisões de escopo.
-5. Só então acompanhar barras de progresso nativas e planejamento por data. **Issues rastreadoras não são milestones nativos.**
+## 11. Milestones nativos publicados e auditados
+**Criados em 22/10/2026, sem datas de vencimento inventadas.** Cada issue #3–#32 pertence a exatamente um dos nove milestones. Os rastreadores #33–#41 documentam o gate de cada release e não recebem milestone, evitando contagem duplicada.
+
+| Milestone nativo | Gate de entrega | Issues técnicas |
+|---|---|---|
+| [M00 — Architecture Gate](https://github.com/Faysk/faysk-lab/milestone/1) | [#33](https://github.com/Faysk/faysk-lab/issues/33) | #3–#7 |
+| [M01 — v0.5.0](https://github.com/Faysk/faysk-lab/milestone/2) | [#34](https://github.com/Faysk/faysk-lab/issues/34) | #10–#13 |
+| [M02 — v0.6.0](https://github.com/Faysk/faysk-lab/milestone/3) | [#35](https://github.com/Faysk/faysk-lab/issues/35) | #8, #9, #14 |
+| [M03 — v0.7.0-alpha](https://github.com/Faysk/faysk-lab/milestone/4) | [#36](https://github.com/Faysk/faysk-lab/issues/36) | #15, #16, #20, #21 |
+| [M04 — v0.8.0-beta](https://github.com/Faysk/faysk-lab/milestone/5) | [#37](https://github.com/Faysk/faysk-lab/issues/37) | #17–#19, #22–#24 |
+| [M05 — v1.0.0](https://github.com/Faysk/faysk-lab/milestone/6) | [#38](https://github.com/Faysk/faysk-lab/issues/38) | #31, #32 |
+| [M06 — v1.1.0](https://github.com/Faysk/faysk-lab/milestone/7) | [#39](https://github.com/Faysk/faysk-lab/issues/39) | #25–#27 |
+| [M07 — v1.2.0](https://github.com/Faysk/faysk-lab/milestone/8) | [#40](https://github.com/Faysk/faysk-lab/issues/40) | #28, #30 |
+| [M08 — v2.0.0 proposal](https://github.com/Faysk/faysk-lab/milestone/9) | [#41](https://github.com/Faysk/faysk-lab/issues/41) | #29 |
+
+**Manutenção:** usar a interface [Issues → Milestones](https://github.com/Faysk/faysk-lab/milestones) como fonte de verdade para associação e progresso. Para alterar escopo, atualizar milestone, rastreador de release, epic #2 e este documento no mesmo PR. Não atribuir datas nem fechar issues sem evidências de aceite.
 
 ## 12. Critério de sucesso v1.0
 A pessoa acessa `lab.faysk.dev` sem instalar nada, entende os limites das informações mostradas, realiza testes opcionais, exporta relatório seguro e, **se quiser**, instala um agente Windows que fornece dados nativos com origem/horário, sem abrir privilégios amplos, sem obrigar nuvem e com revogação real. Nada disso é apresentado como concluído antes de passar pelos gates.
