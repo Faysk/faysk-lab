@@ -5,7 +5,7 @@
 **Epic:** [#2](https://github.com/Faysk/faysk-lab/issues/2) · **Referência técnica:** [ResetExplode v0.16](https://github.com/GustavoReset/ResetExplode)  
 **Baseline técnica verificada:** faysk-lab v0.4.0, HTML/CSS/JS vanilla, ES Modules, Cloudflare Pages/Functions, Node tests, Playwright/axe, CSP e Permissions-Policy restritivas.
 
-> **Estado GitHub (22/10/2026):** os nove **GitHub Milestones nativos M00–M08 estão criados**, com as **30 issues técnicas #3–#32 atribuídas e verificadas**. Os rastreadores #33–#41 permanecem como checklists de artefatos e gates de release, separados dos milestones para não distorcer as barras nativas. Nenhuma issue foi marcada como concluída e não foram impostas datas de vencimento.
+> **Estado GitHub (22/10/2026):** **40/40 issues abertas (#2–#41)** estão atribuídas aos **10 GitHub Milestones nativos**, incluindo 30 tarefas técnicas, 9 gates de entrega e a epic #2 (M99 transversal). A issue #1 permanece fechada, sem alteração. Os gates agora contam nas barras nativas e só devem ser concluídos após a validação da release. Não foram fixadas datas de vencimento.
 
 ## 1. Visão do produto e limites
 O Lab começa com um diagnóstico de **navegador passivo e sem instalação**. As capacidades futuras são aditivas, isoladas e explicitamente autorizadas:
@@ -168,27 +168,32 @@ M00 architecture + threat model (BLOQUEANTE)
 ## 10. Workflow Git e governança de backlog
 - Branches: `feat/fhl-XX-descricao`, `fix/fhl-XX-...`, `docs/milestones-...`.
 - PR deve mencionar a issue (`Closes #N` apenas se realmente satisfizer seus critérios), rodar qualidade, conter resumo e screenshots relevantes.
-- Cada issue filha #3–#32 tem **milestone nativo Mxx atribuído** e um link ao rastreador #33–#41; manter ambas as relações sincronizadas.
-- A issue rastreadora Mxx usa checkbox de cada issue filha, checks de artefatos e GO/NO-GO; fechar apenas quando a versão for validada.
+- Todas as **40 issues abertas #2–#41** possuem milestone nativo: tarefas técnicas e gate compartilham M00–M08; a epic transversal #2 fica no M99. Manter links e critérios de aceite sincronizados.
+- A issue rastreadora Mxx está atribuída ao **mesmo milestone nativo das suas tarefas técnicas**; ela acompanha checkboxes, artefatos e GO/NO-GO e só é fechada após validação. Assim, o progresso nativo representa **tarefas + aceite da release**.
 - Manter `main` implantável; preview da Pages por PR e releases de agente por tags; versão nativa web/agente/schema documentada.
 - Controle de mudanças: tarefa nova só entra num marco se uma existente sair, o esforço for reestimado ou a nova necessidade for bloqueante de segurança.
 
-## 11. Milestones nativos publicados e auditados
-**Criados em 22/10/2026, sem datas de vencimento inventadas.** Cada issue #3–#32 pertence a exatamente um dos nove milestones. Os rastreadores #33–#41 documentam o gate de cada release e não recebem milestone, evitando contagem duplicada.
+## 11. Milestones nativos publicados — 40/40 issues abertas
 
-| Milestone nativo | Gate de entrega | Issues técnicas |
+**Conferência em 22/10/2026.** Cada issue aberta #2–#41 está vinculada a exatamente um milestone nativo. Os gates de release #33–#41 **pertencem aos próprios milestones** e são a tarefa final de aceite. A epic #2, por envolver vários releases, está no **M99 — Program & Governance**. A issue antiga #1 continua fechada, não faz parte deste programa.
+
+| Milestone nativo | Entrega e gate de aceite | Issues no milestone |
 |---|---|---|
-| [M00 — Architecture Gate](https://github.com/Faysk/faysk-lab/milestone/1) | [#33](https://github.com/Faysk/faysk-lab/issues/33) | #3–#7 |
-| [M01 — v0.5.0](https://github.com/Faysk/faysk-lab/milestone/2) | [#34](https://github.com/Faysk/faysk-lab/issues/34) | #10–#13 |
-| [M02 — v0.6.0](https://github.com/Faysk/faysk-lab/milestone/3) | [#35](https://github.com/Faysk/faysk-lab/issues/35) | #8, #9, #14 |
-| [M03 — v0.7.0-alpha](https://github.com/Faysk/faysk-lab/milestone/4) | [#36](https://github.com/Faysk/faysk-lab/issues/36) | #15, #16, #20, #21 |
-| [M04 — v0.8.0-beta](https://github.com/Faysk/faysk-lab/milestone/5) | [#37](https://github.com/Faysk/faysk-lab/issues/37) | #17–#19, #22–#24 |
-| [M05 — v1.0.0](https://github.com/Faysk/faysk-lab/milestone/6) | [#38](https://github.com/Faysk/faysk-lab/issues/38) | #31, #32 |
-| [M06 — v1.1.0](https://github.com/Faysk/faysk-lab/milestone/7) | [#39](https://github.com/Faysk/faysk-lab/issues/39) | #25–#27 |
-| [M07 — v1.2.0](https://github.com/Faysk/faysk-lab/milestone/8) | [#40](https://github.com/Faysk/faysk-lab/issues/40) | #28, #30 |
-| [M08 — v2.0.0 proposal](https://github.com/Faysk/faysk-lab/milestone/9) | [#41](https://github.com/Faysk/faysk-lab/issues/41) | #29 |
+| [M00 — Architecture Gate](https://github.com/Faysk/faysk-lab/milestone/1) | [Gate #33](https://github.com/Faysk/faysk-lab/issues/33) | #3–#7, #33 (**6**) |
+| [M01 — v0.5.0](https://github.com/Faysk/faysk-lab/milestone/2) | [Gate #34](https://github.com/Faysk/faysk-lab/issues/34) | #10–#13, #34 (**5**) |
+| [M02 — v0.6.0](https://github.com/Faysk/faysk-lab/milestone/3) | [Gate #35](https://github.com/Faysk/faysk-lab/issues/35) | #8, #9, #14, #35 (**4**) |
+| [M03 — v0.7.0-alpha](https://github.com/Faysk/faysk-lab/milestone/4) | [Gate #36](https://github.com/Faysk/faysk-lab/issues/36) | #15, #16, #20, #21, #36 (**5**) |
+| [M04 — v0.8.0-beta](https://github.com/Faysk/faysk-lab/milestone/5) | [Gate #37](https://github.com/Faysk/faysk-lab/issues/37) | #17–#19, #22–#24, #37 (**7**) |
+| [M05 — v1.0.0](https://github.com/Faysk/faysk-lab/milestone/6) | [Gate #38](https://github.com/Faysk/faysk-lab/issues/38) | #31, #32, #38 (**3**) |
+| [M06 — v1.1.0](https://github.com/Faysk/faysk-lab/milestone/7) | [Gate #39](https://github.com/Faysk/faysk-lab/issues/39) | #25–#27, #39 (**4**) |
+| [M07 — v1.2.0](https://github.com/Faysk/faysk-lab/milestone/8) | [Gate #40](https://github.com/Faysk/faysk-lab/issues/40) | #28, #30, #40 (**3**) |
+| [M08 — v2.0.0 proposal](https://github.com/Faysk/faysk-lab/milestone/9) | [Gate #41](https://github.com/Faysk/faysk-lab/issues/41) | #29, #41 (**2**) |
+| [M99 — Program & Governance](https://github.com/Faysk/faysk-lab/milestone/10) | [Epic #2](https://github.com/Faysk/faysk-lab/issues/2) | #2 (**1**) |
+| **Total** | **9 releases + 1 governança transversal** | **40 issues abertas** |
 
-**Manutenção:** usar a interface [Issues → Milestones](https://github.com/Faysk/faysk-lab/milestones) como fonte de verdade para associação e progresso. Para alterar escopo, atualizar milestone, rastreador de release, epic #2 e este documento no mesmo PR. Não atribuir datas nem fechar issues sem evidências de aceite.
+**Interpretação do progresso:** o gate é contabilizado como issue real do milestone, portanto cada release só alcança **100%** após passar por revisão e critérios de aceite. M99 mede encerramento da epic, não uma versão de software. Evitar datar M99 e não bloquear a primeira GA por M06/M07/M08.
+
+**Manutenção:** [Issues → Milestones](https://github.com/Faysk/faysk-lab/milestones) é a fonte de verdade para associação e progresso. Alterações de escopo exigem atualizar o milestone, rastreador de release, epic #2 e este documento. Não atribuir datas nem fechar issues sem evidências.
 
 ## 12. Critério de sucesso v1.0
 A pessoa acessa `lab.faysk.dev` sem instalar nada, entende os limites das informações mostradas, realiza testes opcionais, exporta relatório seguro e, **se quiser**, instala um agente Windows que fornece dados nativos com origem/horário, sem abrir privilégios amplos, sem obrigar nuvem e com revogação real. Nada disso é apresentado como concluído antes de passar pelos gates.
