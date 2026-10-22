@@ -2,7 +2,7 @@
 
 ## Proposta de evolução opt-in — Hardware Diagnostics (22/10/2026)
 
-A expansão para **Web Active + import de relatórios + agente Windows read-only opcional** está detalhada em [Plano de entregas e milestones](delivery-milestones.md) e acompanhada pela [epic #2](https://github.com/Faysk/faysk-lab/issues/2). As fases M00–M08 têm **[GitHub Milestones nativos](https://github.com/Faysk/faysk-lab/milestones)** criados, com 30 issues técnicas atribuídas. As issues #33–#41 continuam como rastreadores de artefatos e critérios GO/NO-GO.
+A expansão para **Web Active + import de relatórios + agente Windows read-only opcional** está detalhada em [Plano de entregas e milestones](delivery-milestones.md) e acompanhada pela [epic #2](https://github.com/Faysk/faysk-lab/issues/2). As fases M00–M08 e o marco transversal M99 têm **[GitHub Milestones nativos](https://github.com/Faysk/faysk-lab/milestones)** criados, com **40/40 issues abertas atribuídas**: 30 tarefas técnicas, 9 rastreadores de artefatos e critérios GO/NO-GO (incluídos nos milestones das releases) e a epic #2 no M99.
 
 **Importante:** esta proposta ainda depende do *Architecture Gate* M00 / ADR da issue #3. Ela **não revoga** as prioridades anteriores de privacidade, ausência de fingerprint persistente, scan passivo, não instalar agentes por padrão e não executar testes intensivos sem consentimento. Contas/remoto continuam opcionais, fora do MVP e sem data prometida.
 
